@@ -28,6 +28,35 @@ if not os.path.exists(LOGS_DIR):
     os.makedirs(LOGS_DIR)
 LOG_FILE = os.path.join(LOGS_DIR, 'yamlweave.log')
 
+class UILogHandler(logging.Handler):
+    """将日志消息转发到UI的处理器"""
+
+    def __init__(self, ui):
+        super().__init__()
+        self.ui = ui
+
+    def emit(self, record):
+        if not self.ui:
+            return
+        try:
+            msg = record.getMessage()
+            if record.levelno >= logging.ERROR:
+                tag = "error"
+            elif record.levelno >= logging.WARNING:
+                tag = "warning"
+            else:
+                tag = "info"
+            self.ui.log(f"[{record.levelname}] {msg}", tag=tag)
+        except Exception:
+            pass
+
+def add_ui_handler(ui, level=logging.INFO):
+    """向根日志器添加UI日志处理器"""
+    handler = UILogHandler(ui)
+    handler.setLevel(level)
+    logging.getLogger().addHandler(handler)
+    return handler
+
 def setup_global_logger(level=logging.INFO):
     # 清除旧的handler
     for handler in logging.root.handlers[:]:
