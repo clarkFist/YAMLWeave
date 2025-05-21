@@ -12,6 +12,7 @@ import shutil
 import logging
 import platform
 from pathlib import Path
+from PyInstaller.utils.hooks import collect_tk_files
 
 # 基础配置
 VERSION = "1.0.0"
@@ -90,20 +91,23 @@ def create_spec_file(version):
     
     # 使用简单的相对路径，避免转义问题
     spec_content = f"""# -*- mode: python ; coding: utf-8 -*-
+from PyInstaller.utils.hooks import collect_tk_files
+
+tk_binaries, tk_datas = collect_tk_files()
 
 block_cipher = None
 
 a = Analysis(
     ['{MAIN_SCRIPT}'],
     pathex=['.'],
-    binaries=[],
+    binaries=tk_binaries,
     datas=[
         ('ui', 'code/ui'),
         ('core', 'code/core'),
         ('utils', 'code/utils'),
         ('handlers', 'code/handlers'),
         ('__init__.py', 'code/__init__.py'),
-    ],
+    ] + tk_datas,
     hiddenimports=[
         'yaml',
         'tkinter',
