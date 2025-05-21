@@ -25,6 +25,17 @@ class YAMLWeaveUI:
         self.root = root
         self.root.title("YAMLWeave - C代码插桩工具")
         self.root.geometry("900x700")
+
+        # 使用ttk主题并设置基础样式，使界面更专业
+        self.style = ttk.Style(self.root)
+        try:
+            self.style.theme_use('clam')
+        except tk.TclError:
+            pass
+        default_font = ("Segoe UI", 10)
+        self.style.configure("TLabel", font=default_font)
+        self.style.configure("TButton", font=default_font)
+        self.style.configure("TEntry", font=default_font)
         
         # 设置窗口图标
         try:
@@ -57,6 +68,17 @@ class YAMLWeaveUI:
     
     def _create_widgets(self):
         """创建UI组件"""
+        # 创建菜单栏
+        menu_bar = tk.Menu(self.root)
+        file_menu = tk.Menu(menu_bar, tearoff=0)
+        file_menu.add_command(label="退出", command=self.root.quit)
+        menu_bar.add_cascade(label="文件", menu=file_menu)
+
+        help_menu = tk.Menu(menu_bar, tearoff=0)
+        help_menu.add_command(label="关于", command=self._show_about)
+        menu_bar.add_cascade(label="帮助", menu=help_menu)
+        self.root.config(menu=menu_bar)
+
         # 创建主Frame
         main_frame = ttk.Frame(self.root, padding="10")
         main_frame.pack(fill=tk.BOTH, expand=True)
@@ -89,7 +111,9 @@ class YAMLWeaveUI:
         log_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
         # 使用Text控件并设置滚动条
-        self.log_text = scrolledtext.ScrolledText(log_frame, wrap=tk.WORD, height=20)
+        self.log_text = scrolledtext.ScrolledText(
+            log_frame, wrap=tk.WORD, height=20, font=("Consolas", 10)
+        )
         self.log_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
         # 状态栏
