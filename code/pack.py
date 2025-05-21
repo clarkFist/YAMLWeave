@@ -98,10 +98,11 @@ a = Analysis(
     pathex=['.'],
     binaries=[],
     datas=[
-        ('ui', 'ui'),
-        ('core', 'core'),
-        ('utils', 'utils'),
-        ('handlers', 'handlers'),
+        ('ui', 'code/ui'),
+        ('core', 'code/core'),
+        ('utils', 'code/utils'),
+        ('handlers', 'code/handlers'),
+        ('__init__.py', 'code/__init__.py'),
     ],
     hiddenimports=[
         'yaml',
