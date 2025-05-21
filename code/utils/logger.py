@@ -46,6 +46,14 @@ class UILogHandler(logging.Handler):
                 tag = "warning"
             else:
                 tag = "info"
+
+            # 根据内容自动调整tag以便在UI中分色显示
+            lower_msg = msg.lower()
+            if "锚点" in msg or "anchor" in lower_msg:
+                tag = "find"
+            elif "用例" in msg:
+                tag = "case"
+
             self.ui.log(f"[{record.levelname}] {msg}", tag=tag)
         except Exception:
             pass

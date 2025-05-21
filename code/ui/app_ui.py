@@ -121,6 +121,10 @@ class YAMLWeaveUI:
         self.log_text.tag_configure("insert", foreground="green", background="#F0FFF0", font=("Helvetica", 10, "bold"))
         self.log_text.tag_configure("file", foreground="blue")
         self.log_text.tag_configure("stats", foreground="teal")
+
+        # 测试用例相关标签
+        self.log_text.tag_configure("case", foreground="#990099", background="#FFF0FF",
+                                   font=("Helvetica", 10, "bold"))
         
         # 新增加的增强标签
         # 锚点相关标签
@@ -279,6 +283,17 @@ class YAMLWeaveUI:
             self.log_text.update_idletasks()
             self.processed_lines += 1
             return
+
+        # 根据消息内容自动选择标签
+        if tag == "info":
+            if "测试用例" in message or "用例" in message:
+                tag = "case"
+            elif "插桩" in message and "[插桩]" in message:
+                tag = "insert"
+            elif "[文件]" in message:
+                tag = "file"
+            elif "[统计]" in message:
+                tag = "stats"
         
         # 常规日志条目
         self.log_text.insert(tk.END, timestamp + message + "\n", tag)
