@@ -2,6 +2,7 @@
 import sys
 import os
 from pathlib import Path
+from PyInstaller.utils.hooks import collect_tk_files
 
 # 获取项目根目录的绝对路径
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
@@ -13,11 +14,14 @@ CODE_DIR = os.path.join(PROJECT_ROOT, 'code')
 sys.path.insert(0, PROJECT_ROOT)
 sys.path.insert(0, CODE_DIR)
 
+# 收集 Tkinter/TTK 所需的资源文件，确保打包后的界面样式完整
+tk_datas = collect_tk_files()
+
 a = Analysis(
     [os.path.join(CODE_DIR, 'main.py')],
     pathex=[PROJECT_ROOT, CODE_DIR],
     binaries=[],
-    datas=[
+    datas=tk_datas + [
         (os.path.join(CODE_DIR, 'ui'), 'code/ui'),  # 使用相对结构
         (os.path.join(CODE_DIR, 'core'), 'code/core'),
         (os.path.join(CODE_DIR, 'utils'), 'code/utils'),

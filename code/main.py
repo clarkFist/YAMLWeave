@@ -82,6 +82,20 @@ import glob
 
 setup_global_logger()
 
+def safe_ui_log(ui, message, tag=None):
+    """Safely call ui.log with optional tag support."""
+    if not ui or not hasattr(ui, "log"):
+        return
+    try:
+        import inspect
+        sig = inspect.signature(ui.log)
+        if tag is not None and "tag" in sig.parameters:
+            ui.log(message, tag=tag)
+        else:
+            ui.log(message)
+    except Exception as e:
+        logging.getLogger(__name__).error(f"UI log failed: {e}")
+
 # 获取应用根目录的函数
 def get_application_root():
     """
@@ -1655,22 +1669,22 @@ def main():
                 try:
                     app_ui.project_dir.set(example_project_path)
                     app_ui.yaml_file.set(combined_yaml_file)  # 使用合并的YAML配置
-                    app_ui.log("[信息] 已自动填入测试用例路径")
-                    app_ui.log(f"[信息] 测试用例目录: {example_project_path}")
-                    app_ui.log(f"[信息] 测试用例目录: {simple_examples_dir}")
-                    app_ui.log("[信息] 已使用综合测试配置文件，包含所有测试用例")
-                    app_ui.log("[信息] 您可以直接点击\"扫描并插入\"按钮体验工具功能")
-                    app_ui.log("[信息] 或者选择自己的项目目录和YAML配置文件")
+                    safe_ui_log(app_ui, "[信息] 已自动填入测试用例路径")
+                    safe_ui_log(app_ui, f"[信息] 测试用例目录: {example_project_path}")
+                    safe_ui_log(app_ui, f"[信息] 测试用例目录: {simple_examples_dir}")
+                    safe_ui_log(app_ui, "[信息] 已使用综合测试配置文件，包含所有测试用例")
+                    safe_ui_log(app_ui, "[信息] 您可以直接点击\"扫描并插入\"按钮体验工具功能")
+                    safe_ui_log(app_ui, "[信息] 或者选择自己的项目目录和YAML配置文件")
                     
                     # 添加备份功能介绍
-                    app_ui.log("[信息] ========================================", tag="header")
-                    app_ui.log("[信息] 项目备份功能已启用:", tag="header")
-                    app_ui.log("[信息] 1. 在处理项目前自动创建整个项目的备份", tag="info")
-                    app_ui.log("[信息] 2. 插桩后的文件保存在新目录中", tag="info")
-                    app_ui.log("[信息] 3. 原始项目保持不变", tag="info")
-                    app_ui.log("[信息] 4. 备份目录名: 项目目录名_backup_时间戳", tag="info")
-                    app_ui.log("[信息] 5. 插桩结果目录名: 项目目录名_stubbed_时间戳", tag="info")
-                    app_ui.log("[信息] ========================================", tag="header")
+                    safe_ui_log(app_ui, "[信息] ========================================", tag="header")
+                    safe_ui_log(app_ui, "[信息] 项目备份功能已启用:", tag="header")
+                    safe_ui_log(app_ui, "[信息] 1. 在处理项目前自动创建整个项目的备份", tag="info")
+                    safe_ui_log(app_ui, "[信息] 2. 插桩后的文件保存在新目录中", tag="info")
+                    safe_ui_log(app_ui, "[信息] 3. 原始项目保持不变", tag="info")
+                    safe_ui_log(app_ui, "[信息] 4. 备份目录名: 项目目录名_backup_时间戳", tag="info")
+                    safe_ui_log(app_ui, "[信息] 5. 插桩结果目录名: 项目目录名_stubbed_时间戳", tag="info")
+                    safe_ui_log(app_ui, "[信息] ========================================", tag="header")
                     
                     # 显示执行日志历史统计
                     try:
@@ -1681,46 +1695,46 @@ def main():
                         total_logs = log_stats.get("total_logs", 0)
                         
                         if total_logs > 0:
-                            app_ui.log("[信息] ========================================", tag="header")
-                            app_ui.log("[信息] 执行日志历史统计:", tag="header")
-                            app_ui.log(f"[信息] 总执行次数: {total_logs} 次", tag="stats")
+                            safe_ui_log(app_ui, "[信息] ========================================", tag="header")
+                            safe_ui_log(app_ui, "[信息] 执行日志历史统计:", tag="header")
+                            safe_ui_log(app_ui, f"[信息] 总执行次数: {total_logs} 次", tag="stats")
                             
                             total_processed_files = log_stats.get("total_processed_files", 0)
                             total_inserted_stubs = log_stats.get("total_inserted_stubs", 0)
                             
                             if total_processed_files > 0:
-                                app_ui.log(f"[信息] 总处理文件数: {total_processed_files} 个", tag="stats")
+                                safe_ui_log(app_ui, f"[信息] 总处理文件数: {total_processed_files} 个", tag="stats")
                             
                             if total_inserted_stubs > 0:
-                                app_ui.log(f"[信息] 总插入桩点数: {total_inserted_stubs} 个", tag="stats")
+                                safe_ui_log(app_ui, f"[信息] 总插入桩点数: {total_inserted_stubs} 个", tag="stats")
                             
                             latest_log = log_stats.get("latest_log")
                             if latest_log:
-                                app_ui.log(f"[信息] 最近执行时间: {latest_log.get('modified_time_str', '未知')}", tag="info")
+                                safe_ui_log(app_ui, f"[信息] 最近执行时间: {latest_log.get('modified_time_str', '未知')}", tag="info")
                             
                             # 显示日志目录位置
                             # 常规执行日志目录
                             exec_logs_dir = os.path.join(APP_ROOT, "execution_logs")
-                            app_ui.log(f"[信息] 执行日志保存在: {exec_logs_dir}", tag="file")
+                            safe_ui_log(app_ui, f"[信息] 执行日志保存在: {exec_logs_dir}", tag="file")
                             
                             # 带时间戳的日志目录检测
                             timestamp_logs = glob.glob(os.path.join(APP_ROOT, "logs_*"))
                             if timestamp_logs:
-                                app_ui.log("[信息] 时间戳日志目录:", tag="info")
+                                safe_ui_log(app_ui, "[信息] 时间戳日志目录:", tag="info")
                                 # 只显示最新的3个时间戳日志目录
                                 timestamp_logs.sort(key=os.path.getmtime, reverse=True)
                                 for i, log_dir in enumerate(timestamp_logs[:3]):
-                                    app_ui.log(f"[信息] - {os.path.basename(log_dir)}", tag="file")
+                                    safe_ui_log(app_ui, f"[信息] - {os.path.basename(log_dir)}", tag="file")
                                     # 检查是否有主日志文件
                                     main_log = os.path.join(log_dir, "yamlweave.log")
                                     if os.path.exists(main_log):
-                                        app_ui.log(f"[信息]   * 主日志文件: yamlweave.log", tag="info")
+                                        safe_ui_log(app_ui, f"[信息]   * 主日志文件: yamlweave.log", tag="info")
                                 
                                 # 如果有更多，显示总数
                                 if len(timestamp_logs) > 3:
-                                    app_ui.log(f"[信息] - ...等 {len(timestamp_logs)} 个目录", tag="info")
+                                    safe_ui_log(app_ui, f"[信息] - ...等 {len(timestamp_logs)} 个目录", tag="info")
                             
-                            app_ui.log("[信息] ========================================", tag="header")
+                            safe_ui_log(app_ui, "[信息] ========================================", tag="header")
                     except Exception as log_stats_error:
                         logger.error(f"获取执行日志统计信息失败: {str(log_stats_error)}")
                     
