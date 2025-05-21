@@ -148,7 +148,7 @@ class YamlStubHandler:
                     
                     # 尝试创建示例YAML文件
                     try:
-                        from YAMLWeave.core.stub_parser import create_example_yaml_file
+                        from YAMLWeave.core.stub_processor import create_example_yaml_file
                         example_yaml_path = create_example_yaml_file(yaml_file_path)
                         logger.info(f"已创建示例YAML配置文件: {example_yaml_path}")
                         return {}
@@ -164,7 +164,7 @@ class YamlStubHandler:
                     # 最后尝试在当前目录创建auto.yaml
                     try:
                         current_yaml = 'auto.yaml'
-                        from YAMLWeave.core.stub_parser import create_example_yaml_file
+                        from YAMLWeave.core.stub_processor import create_example_yaml_file
                         if create_example_yaml_file(current_yaml):
                             logger.info(f"已在当前目录创建auto.yaml")
                             return self._read_and_process_yaml(current_yaml)
@@ -182,7 +182,7 @@ class YamlStubHandler:
             
             # 最终尝试：创建基本YAML文件
             try:
-                from YAMLWeave.core.stub_parser import create_example_yaml_file
+                from YAMLWeave.core.stub_processor import create_example_yaml_file
                 if create_example_yaml_file('auto.yaml'):
                     logger.info(f"最终尝试：已创建auto.yaml")
                     self.stub_data = {
