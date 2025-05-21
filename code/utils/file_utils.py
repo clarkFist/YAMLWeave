@@ -47,9 +47,16 @@ def read_file(file_path):
             logger.error(f"读取文件失败: {str(e)}")
             return []
 
-def write_file(file_path, lines):
-    """写入文件内容"""
-    encoding = detect_encoding(file_path) if os.path.exists(file_path) else 'utf-8'
+def write_file(file_path, lines, encoding: Optional[str] = None):
+    """写入文件内容
+
+    Args:
+        file_path: 文件路径
+        lines: 要写入的内容列表
+        encoding: 指定编码；为 ``None`` 时自动检测原文件编码
+    """
+    if encoding is None:
+        encoding = detect_encoding(file_path) if os.path.exists(file_path) else 'utf-8'
     try:
         # 尝试从core模块导入
         from YAMLWeave.core.file_io import write_lines_to_file as core_write_lines_to_file
@@ -109,9 +116,9 @@ def write_lines_to_file(file_path: str, lines: List[str], encoding: str = 'utf-8
     Args:
         file_path: 文件路径
         lines: 要写入的行列表
-        encoding: 编码方式
+        encoding: 编码方式，传递给 :func:`write_file`
     
     Returns:
         bool: 是否写入成功
     """
-    return write_file(file_path, lines) 
+    return write_file(file_path, lines, encoding)
