@@ -1211,8 +1211,13 @@ def create_fallback_controller(ui_instance):
                                             # 插入代码行
                                             lines.insert(i + 1, "")  # 空行
                                             for idx, code_line in enumerate(code_lines):
-                                                lines.insert(i + 1 + idx, f"{indent_str}{code_line}")
-                                            
+                                                full_line = f"{indent_str}{code_line}"
+                                                lines.insert(i + 1 + idx, full_line)
+                                                if self.ui and hasattr(self.ui, 'root'):
+                                                    self.ui.root.after(0, self.ui.log, f"[插桩行] {full_line}", "code")
+                                                    self.ui.root.after(0, self.ui.root.update_idletasks)
+                                                elif self.ui:
+                                                    self.ui.log(f"[插桩行] {full_line}", tag="code")
                                             # 更新插入统计
                                             inserted_stubs += 1
                                             self.stats["inserted_stubs"] += 1
@@ -1284,8 +1289,13 @@ def create_fallback_controller(ui_instance):
                                     
                                     # 插入代码行
                                     for idx, code_line in enumerate(code_lines):
-                                        lines.insert(i + 2 + idx, f"{indent_str}{code_line}")
-                                    
+                                        full_line = f"{indent_str}{code_line}"
+                                        lines.insert(i + 2 + idx, full_line)
+                                        if self.ui and hasattr(self.ui, 'root'):
+                                            self.ui.root.after(0, self.ui.log, f"[插桩行] {full_line}", "code")
+                                            self.ui.root.after(0, self.ui.root.update_idletasks)
+                                        elif self.ui:
+                                            self.ui.log(f"[插桩行] {full_line}", tag="code")
                                     # 更新插入统计
                                     inserted_stubs += 1
                                     self.stats["inserted_stubs"] += 1
@@ -1328,530 +1338,99 @@ def create_fallback_controller(ui_instance):
                         raise
                 
                 def process_files(self, project_dir=None, yaml_file=None):
-                    """处理文件的主方法（线程安全进度条更新）"""
-                    try:
-                        # 调试信息 - 输出实例信息
-                        print("\n=== DEBUG FALLBACK CONTROLLER ===")
-                        print(f"FallbackAppController.process_files 被调用: {self.__class__.__name__}")
-                        print(f"self.processor 类型: {type(self.processor).__name__ if self.processor else '无'}")
-                        print(f"project_dir: {project_dir}")
-                        print(f"yaml_file: {yaml_file}")
-                        print(f"UI对象存在: {self.ui is not None}")
-                        if self.ui:
-                            print(f"UI对象ID: {id(self.ui)}")
-                        
-                        # 更新实例属性
-                        if project_dir:
-                            self.project_dir = project_dir
+                    """异步递归方式处理文件，实现UI日志区实时刷新"""
+                    import glob
+                    import os
+                    import datetime
+
+                    if project_dir:
+                        self.project_dir = project_dir
+                    if yaml_file:
+                        self.yaml_file = yaml_file
+
+                    # 查找所有.c和.h文件
+                    c_files = []
+                    for root, _, files in os.walk(self.project_dir):
+                        for file in files:
+                            if file.endswith('.c') or file.endswith('.h'):
+                                c_files.append(os.path.join(root, file))
+                    self.stats = {"scanned_files": len(c_files), "updated_files": 0, "inserted_stubs": 0, "failed_files": 0}
+
+                    # 备份和输出目录
+                    now = datetime.datetime.now()
+                    timestamp = now.strftime("%Y%m%d_%H%M%S")
+                    project_name = os.path.basename(self.project_dir.rstrip("/\\"))
+                    backup_dir_name = f"{project_name}_backup_{timestamp}"
+                    backup_dir = os.path.join(os.path.dirname(self.project_dir), backup_dir_name)
+                    output_dir_name = f"{project_name}_stubbed_{timestamp}"
+                    output_dir = os.path.join(os.path.dirname(self.project_dir), output_dir_name)
+                    self.backup_dir = backup_dir
+                    self.output_dir = output_dir
+                    os.makedirs(backup_dir, exist_ok=True)
+                    os.makedirs(output_dir, exist_ok=True)
+
+                    if self.ui:
+                        self.ui.log(f"[信息] 已创建备份目录: {backup_dir_name}", tag="file")
+                        self.ui.log(f"[信息] 已创建输出目录: {output_dir_name}", tag="file")
+                        self.ui.log(f"[信息] 开始处理目录: {self.project_dir}")
                         if yaml_file:
-                            self.yaml_file = yaml_file
-                            
-                        # 创建备份目录和输出目录
-                        if self.project_dir and os.path.exists(self.project_dir):
-                            try:
-                                import datetime
-                                now = datetime.datetime.now()
-                                timestamp = now.strftime("%Y%m%d_%H%M%S")
-                                project_name = os.path.basename(self.project_dir.rstrip("/\\"))
-                                
-                                # 创建备份目录
-                                backup_dir_name = f"{project_name}_backup_{timestamp}"
-                                backup_dir = os.path.join(os.path.dirname(self.project_dir), backup_dir_name)
-                                
-                                # 创建输出目录
-                                output_dir_name = f"{project_name}_stubbed_{timestamp}"
-                                output_dir = os.path.join(os.path.dirname(self.project_dir), output_dir_name)
-                                
-                                # 保存目录路径
-                                self.backup_dir = backup_dir
-                                self.output_dir = output_dir
-                                
-                                # 创建备份目录
-                                os.makedirs(backup_dir, exist_ok=True)
-                                
-                                # 创建输出目录
-                                os.makedirs(output_dir, exist_ok=True)
-                                
-                                # 记录日志
-                                if self.ui:
-                                    self.ui.log(f"[信息] 已创建备份目录: {backup_dir_name}", tag="file")
-                                    self.ui.log(f"[信息] 已创建输出目录: {output_dir_name}", tag="file")
-                            except Exception as e:
-                                print(f"创建备份和输出目录失败: {str(e)}")
-                                import traceback
-                                print(traceback.format_exc())
-                        
-                        # 清空锚点列表
-                        self.anchors_found = 0
-                        self.anchor_details = []
-                        
-                        # 记录UI日志
-                        if self.ui:
-                            self.ui.log("[信息] 开始处理目录: " + str(project_dir))
-                            if yaml_file:
-                                self.ui.log("[信息] 使用YAML配置: " + str(yaml_file))
-                            self.ui.log("[信息] 设置UI引用给处理器")
-                            self.ui.log("[信息] 开始处理过程 - 将显示所有锚点信息", tag="header")
-                        
-                        # 创建处理器实例(如果还没有)
-                        if self.processor is None and hasattr(self, 'StubProcessor'):
-                            print("创建新的StubProcessor实例")
-                            
-                            # 创建处理器时直接传入UI对象
-                            print(f"传递UI对象: {self.ui}")
-                            print(f"UI对象类型: {type(self.ui).__name__}")
-                            
-                            try:
-                                self.processor = self.StubProcessor(project_dir, yaml_file, self.ui)
-                                print(f"StubProcessor实例创建成功")
-                                print(f"处理器UI对象: {self.processor.ui}")
-                                print(f"处理器UI对象类型: {type(self.processor.ui).__name__ if self.processor.ui else '无UI'}")
-                            except Exception as e:
-                                print(f"StubProcessor实例创建失败: {str(e)}")
-                                import traceback
-                                print(traceback.format_exc())
-                            
-                            # 确保处理器的UI对象正确设置
-                            if hasattr(self.processor, 'ui') and not self.processor.ui:
-                                print("处理器UI对象未设置，手动设置")
-                                self.processor.ui = self.ui
-                            
-                            print(f"新创建的处理器UI对象ID: {id(self.processor.ui) if hasattr(self.processor, 'ui') and self.processor.ui else '无'}")
-                            
-                            # 直接输出一条测试日志，检查UI引用是否正常
-                            if hasattr(self.processor, 'ui') and self.processor.ui:
-                                try:
-                                    self.processor.ui.log("[信息] StubProcessor实例成功创建并设置UI引用", tag="info")
-                                except Exception as e:
-                                    print(f"测试UI日志输出失败: {str(e)}")
-                            
-                            # 更新处理器实例
-                            if self.processor:
-                                if project_dir:
-                                    self.processor.project_dir = project_dir
-                                if yaml_file:
-                                    self.processor.yaml_file = yaml_file
-                                
-                                # 设置拦截函数
-                                original_find_stub_code = None
-                                if hasattr(self.processor, 'find_stub_code'):
-                                    original_find_stub_code = self.processor.find_stub_code
-                                    
-                                    # 定义拦截函数
-                                    def intercepted_find_stub_code(tc_id, step_id, segment_id):
-                                        # 直接向UI输出锚点信息
-                                        if self.ui:
-                                            filename = os.path.basename(self.processor.current_file) if hasattr(self.processor, 'current_file') else "未知文件"
-                                            line_num = self.processor.current_line if hasattr(self.processor, 'current_line') else 0
-                                            self.ui.log(f"[锚点] 在文件 {filename} 的第 {line_num} 行找到锚点: {tc_id} {step_id} {segment_id}", tag="find")
-                                            
-                                            # 尝试获取当前行的代码内容
-                                            try:
-                                                if hasattr(self.processor, 'current_content') and self.processor.current_content:
-                                                    lines = self.processor.current_content.splitlines()
-                                                    if 0 <= line_num-1 < len(lines):
-                                                        code_line = lines[line_num-1].strip()
-                                                        self.ui.log(f"[代码] {code_line}", tag="info")
-                                            except Exception as e:
-                                                print(f"获取代码内容失败: {str(e)}")
-                                        # 调用原始方法
-                                        return original_find_stub_code(tc_id, step_id, segment_id)
-                                    
-                                    # 替换方法
-                                    self.processor.find_stub_code = intercepted_find_stub_code
-                                    print("已设置锚点拦截函数")
-                                
-                                # 确保UI引用正确设置
-                                if hasattr(self.processor, 'ui'):
-                                    # 调试信息 - 输出处理器信息
-                                    print(f"处理器UI属性类型: {type(self.processor.ui).__name__ if hasattr(self.processor, 'ui') else '无'}")
-                                    print(f"修改前UI对象ID: {id(self.processor.ui) if hasattr(self.processor, 'ui') and self.processor.ui else '无'}")
-                                    
-                                    # 强制设置UI - 确保使用我们的UI实例
-                                    self.processor.ui = self.ui
-                                    
-                                    # 检查设置后UI对象
-                                    print(f"修改后UI对象ID: {id(self.processor.ui) if hasattr(self.processor, 'ui') and self.processor.ui else '无'}")
-                                    self.ui.log("[信息] 已设置内部处理器的UI引用")
-                                else:
-                                    print("警告: 处理器没有ui属性")
-                                    # 尝试添加ui属性
-                                    setattr(self.processor, 'ui', self.ui)
-                                    print(f"添加ui属性后: {hasattr(self.processor, 'ui')}")
-                                
-                                # 添加辅助方法，确保锚点信息直接输出到UI
-                                def display_anchor(filename, line_num, tc_id, step_id, segment_id):
-                                    if self.ui:
-                                        try:
-                                            message = f"[锚点] 在文件 {filename} 的第 {line_num} 行找到锚点: {tc_id} {step_id} {segment_id}"
-                                            self.ui.log(message, tag="find")
-                                            # 尝试获取当前文件处理实例中的代码内容
-                                            if hasattr(self.processor, 'current_content') and self.processor.current_content:
-                                                lines = self.processor.current_content.splitlines()
-                                                if 0 <= line_num-1 < len(lines):
-                                                    code_line = lines[line_num-1].strip()
-                                                    self.ui.log(f"[代码] {code_line}", tag="info")
-                                            return True
-                                        except Exception as e:
-                                            print(f"显示锚点信息失败: {str(e)}")
-                                    return False
-                                
-                                # 添加辅助方法到处理器
-                                self.processor.display_anchor = display_anchor
-                                
-                                # 添加测试用例详情解析和展示功能
-                                def parse_test_case_info(yaml_file):
-                                    """解析YAML配置中的测试用例详细信息"""
-                                    test_case_info = {}
-                                    if not yaml_file or not os.path.exists(yaml_file):
-                                        return test_case_info
-                                    
-                                    try:
-                                        import yaml
-                                        with open(yaml_file, 'r', encoding='utf-8') as f:
-                                            yaml_content = yaml.safe_load(f)
-                                            if not yaml_content:
-                                                return test_case_info
-                                            
-                                            # 解析每个测试用例
-                                            for tc_id, tc_data in yaml_content.items():
-                                                # 获取测试用例描述（如果有）
-                                                tc_desc = ""
-                                                if isinstance(tc_data, dict):
-                                                    # 查找注释行
-                                                    with open(yaml_file, 'r', encoding='utf-8') as f_lines:
-                                                        yaml_lines = f_lines.readlines()
-                                                        for i, line in enumerate(yaml_lines):
-                                                            if tc_id in line and line.strip().startswith(tc_id + ":"):
-                                                                # 查找上方的注释行
-                                                                for j in range(i-1, max(0, i-5), -1):
-                                                                    if yaml_lines[j].strip().startswith("#"):
-                                                                        tc_desc = yaml_lines[j].strip("# \n")
-                                                                        break
-                                                
-                                                # 收集步骤和段信息
-                                                steps = {}
-                                                step_count = 0
-                                                segment_count = 0
-                                                code_lines = 0
-                                                
-                                                if isinstance(tc_data, dict):
-                                                    for step_id, step_data in tc_data.items():
-                                                        step_count += 1
-                                                        segments = {}
-                                                        
-                                                        if isinstance(step_data, dict):
-                                                            for segment_id, segment_code in step_data.items():
-                                                                segment_count += 1
-                                                                if isinstance(segment_code, str):
-                                                                    segment_lines = len(segment_code.splitlines())
-                                                                    code_lines += segment_lines
-                                                                    segments[segment_id] = {
-                                                                        'code': segment_code,
-                                                                        'line_count': segment_lines
-                                                                    }
-                                                        
-                                                        steps[step_id] = segments
-                                                
-                                                test_case_info[tc_id] = {
-                                                    'description': tc_desc,
-                                                    'steps': steps,
-                                                    'step_count': step_count,
-                                                    'segment_count': segment_count,
-                                                    'code_lines': code_lines
-                                                }
-                                        
-                                        print(f"已解析测试用例: {len(test_case_info)} 个")
-                                        return test_case_info
-                                    except Exception as e:
-                                        print(f"解析测试用例信息失败: {str(e)}")
-                                        import traceback
-                                        print(traceback.format_exc())
-                                        return {}
-                                
-                                # 收集测试用例分类信息
-                                def categorize_test_cases(test_case_info):
-                                    """对测试用例进行分类"""
-                                    categories = {
-                                        'basic': [],  # 基础测试 TC00x
-                                        'init': [],   # 初始化测试 TC10x
-                                        'validate': [], # 验证测试 TC20x 
-                                        'feature': [], # 功能测试 TC30x-TC89x
-                                        'performance': [], # 性能测试 TC90x
-                                        'other': []   # 其他测试
-                                    }
-                                    
-                                    for tc_id, tc_data in test_case_info.items():
-                                        if tc_id.startswith('TC00'):
-                                            categories['basic'].append(tc_id)
-                                        elif tc_id.startswith('TC10'):
-                                            categories['init'].append(tc_id) 
-                                        elif tc_id.startswith('TC20'):
-                                            categories['validate'].append(tc_id)
-                                        elif tc_id.startswith('TC9'):
-                                            categories['performance'].append(tc_id)
-                                        elif tc_id.startswith('TC'):
-                                            categories['feature'].append(tc_id)
-                                        else:
-                                            categories['other'].append(tc_id)
-                                    
-                                    return categories
-                                
-                                # 执行处理前添加直接UI输出测试
-                                if self.ui:
-                                    self.ui.log("[信息] 准备处理文件...", tag="header")
-                                    
-                                    # 解析并显示测试用例详情
-                                    if yaml_file and os.path.exists(yaml_file):
-                                        self.ui.log(f"[信息] 分析YAML配置文件: {os.path.basename(yaml_file)}", tag="info")
-                                        test_case_info = parse_test_case_info(yaml_file)
-                                        
-                                        if test_case_info:
-                                            # 测试用例总体统计
-                                            total_tc = len(test_case_info)
-                                            total_steps = sum(tc['step_count'] for tc in test_case_info.values())
-                                            total_segments = sum(tc['segment_count'] for tc in test_case_info.values())
-                                            total_code_lines = sum(tc['code_lines'] for tc in test_case_info.values())
-                                            
-                                            # 显示测试用例分类统计
-                                            categories = categorize_test_cases(test_case_info)
-                                            self.ui.log(f"[信息] ===== 测试用例分析 =====", tag="header")
-                                            self.ui.log(f"[用例] 共加载测试用例: {total_tc} 个，步骤: {total_steps} 个，桩点: {total_segments} 个", tag="stats")
-                                            self.ui.log(f"[用例] 总代码行数: {total_code_lines} 行", tag="stats")
-                                            
-                                            # 按分类显示测试用例
-                                            category_names = {
-                                                'basic': '基础测试',
-                                                'init': '初始化测试',
-                                                'validate': '验证测试',
-                                                'feature': '功能测试',
-                                                'performance': '性能测试',
-                                                'other': '其他测试'
-                                            }
-                                            
-                                            for cat, tc_list in categories.items():
-                                                if tc_list:
-                                                    self.ui.log(f"[用例] {category_names[cat]}: {len(tc_list)} 个", tag="info")
-                                                    # 最多显示5个用例ID
-                                                    if len(tc_list) <= 5:
-                                                        for tc_id in tc_list:
-                                                            desc = test_case_info[tc_id]['description']
-                                                            desc_text = f" - {desc}" if desc else ""
-                                                            self.ui.log(f"[用例]   {tc_id}{desc_text}", tag="find")
-                                                    else:
-                                                        for tc_id in tc_list[:3]:
-                                                            desc = test_case_info[tc_id]['description']
-                                                            desc_text = f" - {desc}" if desc else ""
-                                                            self.ui.log(f"[用例]   {tc_id}{desc_text}", tag="find")
-                                                        self.ui.log(f"[用例]   ...还有 {len(tc_list)-3} 个未显示...", tag="info")
-                                            
-                                            # 保存测试用例信息，以便后续使用
-                                            self.test_case_info = test_case_info
-                                            self.test_case_categories = categories
-                                        else:
-                                            self.ui.log("[警告] 无法从YAML文件中提取测试用例信息", tag="warning")
-                                    
-                                    self.ui.log("[信息] 开始扫描锚点和插入桩代码", tag="info")
-                                
-                                # 定义处理文件过程中的回调函数来提供实时锚点信息
-                                def file_callback(filepath, updated):
-                                    print(f"文件回调: {os.path.basename(filepath)} 已更新: {updated}")
-                                    # 直接通过UI输出
-                                    if self.ui:
-                                        self.ui.log(f"[文件] 处理: {os.path.basename(filepath)}", tag="file")
+                            self.ui.log(f"[信息] 使用YAML配置: {yaml_file}")
 
-                                # 定义锚点检测钩子函数 - 这将被插入到处理器中
-                                def anchor_hook(filename, line_number, tc_id, step_id, segment_id):
-                                    """处理检测到的锚点"""
-                                    # 直接输出到控制台
-                                    print(f"\n==== 锚点检测到 ====")
-                                    print(f"文件: {filename}")
-                                    print(f"行号: {line_number}")
-                                    print(f"锚点: {tc_id} {step_id} {segment_id}")
-                                    print("===================\n")
-                                    
-                                    self.anchors_found += 1
-                                    self.anchor_details.append({
-                                        'filename': filename, 
-                                        'line': line_number, 
-                                        'tc_id': tc_id, 
-                                        'step_id': step_id, 
-                                        'segment_id': segment_id
-                                    })
-                                    
-                                    # 立即输出锚点信息
-                                    if self.ui:
-                                        try:
-                                            # 强制直接写入而不使用UI对象的log方法
-                                            anchor_message = f"[锚点] 在文件 {filename} 的第 {line_number} 行找到锚点: {tc_id} {step_id} {segment_id}"
-                                            # 首先尝试直接插入到Text控件
-                                            if hasattr(self.ui, 'log_text'):
-                                                import tkinter as tk
-                                                import datetime
-                                                timestamp = datetime.datetime.now().strftime("[%H:%M:%S] ")
-                                                self.ui.log_text.insert(tk.END, timestamp + anchor_message + "\n", "find")
-                                                self.ui.log_text.see(tk.END)
-                                                self.ui.log_text.update_idletasks()
-                                            # 再尝试使用UI对象的log方法
-                                            self.ui.log(anchor_message, tag="find")
-                                            
-                                            # 增强: 显示对应的用例详细信息和桩代码预览
-                                            if hasattr(self, 'test_case_info') and tc_id in self.test_case_info:
-                                                tc_info = self.test_case_info[tc_id]
-                                                
-                                                # 显示用例描述
-                                                if tc_info['description']:
-                                                    self.ui.log(f"[用例] {tc_id} 描述: {tc_info['description']}", tag="info")
-                                                
-                                                # 检查是否有对应的桩代码
-                                                if step_id in tc_info['steps'] and segment_id in tc_info['steps'][step_id]:
-                                                    segment_info = tc_info['steps'][step_id][segment_id]
-                                                    code = segment_info['code']
-                                                    lines = segment_info['line_count']
-                                                    
-                                                    # 显示桩代码信息
-                                                    self.ui.log(f"[桩点] 将插入 {lines} 行代码", tag="info")
-                                                    
-                                                    # 显示代码预览（最多显示5行）
-                                                    code_lines = code.splitlines()
-                                                    preview_lines = code_lines[:min(5, len(code_lines))]
-                                                    for i, line in enumerate(preview_lines):
-                                                        self.ui.log(f"[代码] {i+1}: {line}", tag="code")
-                                                    
-                                                    # 如果代码超过5行，显示省略信息
-                                                    if len(code_lines) > 5:
-                                                        self.ui.log(f"[代码] ... 还有 {len(code_lines) - 5} 行未显示 ...", tag="code")
-                                                else:
-                                                    # 如果在YAML中找不到对应的桩代码，给出警告
-                                                    self.ui.log(f"[警告] 在YAML配置中找不到对应的桩代码: {tc_id}.{step_id}.{segment_id}", tag="warning")
-                                        except Exception as e:
-                                            print(f"锚点输出失败: {str(e)}")
-                                            import traceback
-                                            print(traceback.format_exc())
-
-                                # 设置钩子函数
-                                if self.processor:
-                                    # 注入钩子函数到处理器
-                                    setattr(self.processor, 'anchor_hook', anchor_hook)
-                                    setattr(self.processor, 'file_callback', file_callback)
-                                
-                                # 执行处理
-                                print(f"调用 processor.process_files() 方法: {type(self.processor.process_files).__name__}")
-                                print("=== DEBUG FALLBACK CONTROLLER END ===\n")
-                                
-                                result = self.processor.process_files()
-                                
-                                # 输出锚点统计
-                                if self.anchors_found > 0 and self.ui:
-                                    self.ui.log(f"\n[信息] ----- 锚点详细信息 ----- (共找到 {self.anchors_found} 个锚点)", tag="header")
-                                    for i, detail in enumerate(self.anchor_details[:10]):  # 最多显示10个锚点
-                                        self.ui.log(f"[锚点] 锚点 {i+1}: 文件 {detail['filename']} 第 {detail['line']} 行: {detail['tc_id']} {detail['step_id']} {detail['segment_id']}", tag="find")
-                                    if len(self.anchor_details) > 10:
-                                        self.ui.log(f"[锚点] ...还有 {len(self.anchor_details) - 10} 个锚点未显示...", tag="info")
-                                
-                                # 输出处理结果
-                                if self.ui:
-                                    # 确保UI更新
-                                    self.ui.root.after(0, self.ui.update_status, "处理完成")
-                                    self.ui.log("\n[信息] ===== 处理完成 =====", tag="header")
-                                    self.ui.log("[信息] 所有文件处理完毕", tag="info")
-                                    
-                                    # 增强的统计分析
-                                    if hasattr(self.processor, 'stats'):
-                                        stats = self.processor.stats
-                                        scanned_files = stats.get("scanned_files", 0)
-                                        updated_files = stats.get("updated_files", 0)
-                                        inserted_stubs = stats.get("inserted_stubs", 0)
-                                        failed_files = stats.get("failed_files", 0)
-                                        
-                                        # 输出基础统计信息
-                                        self.ui.log(f"[信息] 文件总数: {scanned_files}", tag="stats")
-                                        self.ui.log(f"[信息] 处理成功文件: {updated_files}", tag="stats")
-                                        self.ui.log(f"[信息] 成功插入桩点: {inserted_stubs}", tag="stats")
-                                        
-                                        if failed_files > 0:
-                                            self.ui.log(f"[警告] 处理失败文件: {failed_files}", tag="warning")
-                                        
-                                        # 计算并显示成功率
-                                        if scanned_files > 0:
-                                            file_success_rate = round((updated_files / scanned_files) * 100, 2)
-                                            self.ui.log(f"[信息] 文件处理成功率: {file_success_rate}%", tag="stats")
-                                        
-                                        # 添加用例覆盖分析
-                                        if hasattr(self, 'test_case_info') and hasattr(self, 'anchor_details'):
-                                            # 统计插桩锚点的测试用例和步骤
-                                            anchored_tc_ids = set()
-                                            anchored_steps = set()
-                                            for detail in self.anchor_details:
-                                                anchored_tc_ids.add(detail['tc_id'])
-                                                anchored_steps.add(f"{detail['tc_id']}.{detail['step_id']}")
-                                            
-                                            # 统计YAML配置中的测试用例和步骤
-                                            yaml_tc_ids = set(self.test_case_info.keys())
-                                            yaml_steps = set()
-                                            for tc_id, tc_info in self.test_case_info.items():
-                                                for step_id in tc_info['steps'].keys():
-                                                    yaml_steps.add(f"{tc_id}.{step_id}")
-                                            
-                                            # 计算覆盖率
-                                            if yaml_tc_ids:
-                                                tc_coverage = round((len(anchored_tc_ids) / len(yaml_tc_ids)) * 100, 2)
-                                                self.ui.log(f"[用例] 测试用例覆盖率: {len(anchored_tc_ids)}/{len(yaml_tc_ids)} ({tc_coverage}%)", tag="stats")
-                                                
-                                                # 特别关注未覆盖的用例
-                                                uncovered_tcs = yaml_tc_ids - anchored_tc_ids
-                                                if uncovered_tcs:
-                                                    self.ui.log(f"[用例] 未覆盖的测试用例: {len(uncovered_tcs)} 个", tag="info")
-                                                    # 最多显示5个未覆盖的用例
-                                                    for i, tc_id in enumerate(list(uncovered_tcs)[:5]):
-                                                        desc = self.test_case_info[tc_id]['description']
-                                                        desc_text = f" - {desc}" if desc else ""
-                                                        self.ui.log(f"[用例]   未覆盖: {tc_id}{desc_text}", tag="warning")
-                                                    if len(uncovered_tcs) > 5:
-                                                        self.ui.log(f"[用例]   ...还有 {len(uncovered_tcs) - 5} 个未覆盖的用例未显示...", tag="info")
-                                            
-                                            if yaml_steps:
-                                                step_coverage = round((len(anchored_steps) / len(yaml_steps)) * 100, 2)
-                                                self.ui.log(f"[用例] 测试步骤覆盖率: {len(anchored_steps)}/{len(yaml_steps)} ({step_coverage}%)", tag="stats")
-                                    
-                                    # 显示备份和结果目录信息
-                                    if hasattr(self.processor, 'backup_dir') and self.processor.backup_dir:
-                                        self.ui.log(f"[信息] 原始项目备份目录: {self.processor.backup_dir}", tag="file")
-                                        # 简化路径只显示目录名
-                                        backup_dirname = os.path.basename(self.processor.backup_dir)
-                                        self.ui.log(f"[信息] 原始项目备份在: {backup_dirname}", tag="file")
-                                    
-                                    if hasattr(self.processor, 'output_dir') and self.processor.output_dir:
-                                        self.ui.log(f"[信息] 处理结果目录: {self.processor.output_dir}", tag="file")
-                                        # 简化路径只显示目录名
-                                        output_dirname = os.path.basename(self.processor.output_dir)
-                                        self.ui.log(f"[信息] 处理结果保存在: {output_dirname}", tag="file")
-                                    
-                                    # 最终完成消息
-                                    self.ui.log("[成功] 插桩操作已成功完成", tag="success")
-                                return result
-                            else:
-                                error_msg = "处理器实例未创建，无法处理文件"
-                                print(f"错误: {error_msg}")
-                                if self.ui:
-                                    self.ui.log(f"[错误] {error_msg}", tag="error")
-                                return False, error_msg, {"scanned_files": 0, "updated_files": 0, "inserted_stubs": 0, "failed_files": 0}
-                        else:
-                            error_msg = "处理器实例未创建，无法处理文件"
-                            print(f"错误: {error_msg}")
-                            if self.ui:
-                                self.ui.log(f"[错误] {error_msg}", tag="error")
-                            return False, error_msg, {"scanned_files": 0, "updated_files": 0, "inserted_stubs": 0, "failed_files": 0}
+                    # 备份原始项目
+                    import shutil
+                    try:
+                        shutil.copytree(self.project_dir, backup_dir, dirs_exist_ok=True)
                     except Exception as e:
-                        logger.error(f"处理文件时出错: {str(e)}")
-                        print(f"异常: {str(e)}")
-                        import traceback
-                        print(traceback.format_exc())
                         if self.ui:
-                            self.ui.log(f"[错误] 处理文件时出错: {str(e)}", tag="error")
-                            self.ui.update_status("处理失败")
-                        return False, str(e), {"scanned_files": 0, "updated_files": 0, "inserted_stubs": 0, "failed_files": 0}
-    
+                            self.ui.log(f"[警告] 备份目录时出错: {str(e)}", tag="warning")
+
+                    # 异步递归处理文件
+                    def process_next_file(idx):
+                        if idx >= len(c_files):
+                            # 处理完成
+                            if self.ui:
+                                self.ui.log(f"[成功] 插桩操作已成功完成", tag="success")
+                                self.ui.log(f"[信息] 文件总数: {self.stats['scanned_files']}", tag="stats")
+                                self.ui.log(f"[信息] 处理成功文件: {self.stats['updated_files']}", tag="stats")
+                                self.ui.log(f"[信息] 成功插入桩点: {self.stats['inserted_stubs']}", tag="stats")
+                                if self.stats['failed_files'] > 0:
+                                    self.ui.log(f"[警告] 处理失败文件: {self.stats['failed_files']}", tag="warning")
+                                self.ui.log(f"[信息] 原始项目备份在: {os.path.basename(backup_dir)}", tag="file")
+                                self.ui.log(f"[信息] 处理结果保存在: {os.path.basename(output_dir)}", tag="file")
+                            return
+                        file_path = c_files[idx]
+                        try:
+                            with open(file_path, 'r', encoding='utf-8') as f:
+                                content = f.read()
+                        except Exception as e:
+                            self.stats['failed_files'] += 1
+                            if self.ui:
+                                self.ui.log(f"[错误] 读取文件失败: {file_path}, 错误: {str(e)}", tag="error")
+                            self.ui.root.after(1, lambda: process_next_file(idx+1))
+                            return
+                        try:
+                            new_content = self.process_single_file(content, file_path)
+                            if new_content != content:
+                                rel_path = os.path.relpath(file_path, self.project_dir)
+                                stub_file_path = os.path.join(output_dir, rel_path)
+                                os.makedirs(os.path.dirname(stub_file_path), exist_ok=True)
+                                with open(stub_file_path, 'w', encoding='utf-8') as f:
+                                    f.write(new_content)
+                                self.stats['updated_files'] += 1
+                            self.ui.root.after(1, lambda: process_next_file(idx+1))
+                        except Exception as e:
+                            self.stats['failed_files'] += 1
+                            if self.ui:
+                                self.ui.log(f"[错误] 处理文件失败: {file_path}, 错误: {str(e)}", tag="error")
+                            self.ui.root.after(1, lambda: process_next_file(idx+1))
+                    # 启动递归
+                    if self.ui and hasattr(self.ui, 'root'):
+                        self.ui.root.after(1, lambda: process_next_file(0))
+                    else:
+                        # 非UI环境下直接顺序处理
+                        for idx in range(len(c_files)):
+                            process_next_file(idx)
+
     # 创建控制器实例并返回
     return FallbackAppController(ui_instance)
 
