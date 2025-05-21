@@ -1,0 +1,40 @@
+2025-05-21 23:22:53,336 - INFO - 开始打包 YAMLWeave...
+2025-05-21 23:22:53,337 - INFO - Python版本: 3.12.9 | packaged by Anaconda, Inc. | (main, Feb  6 2025, 18:49:16) [MSC v.1929 64 bit (AMD64)]
+2025-05-21 23:22:53,445 - INFO - 平台: Windows-11-10.0.26100-SP0
+2025-05-21 23:22:53,445 - INFO - 项目目录: c:\Users\clark\Desktop\YAMLWeave
+2025-05-21 23:22:53,446 - INFO - 检查必要的依赖...
+2025-05-21 23:22:53,563 - INFO - PyInstaller已安装
+2025-05-21 23:22:53,579 - INFO - PyYAML已安装
+2025-05-21 23:22:53,579 - INFO - 清理旧文件...
+2025-05-21 23:22:53,579 - INFO - 验证关键文件语法...
+2025-05-21 23:22:53,580 - INFO - 验证文件: c:\Users\clark\Desktop\YAMLWeave\code\main.py
+2025-05-21 23:22:53,655 - INFO - 文件语法验证通过: c:\Users\clark\Desktop\YAMLWeave\code\main.py
+2025-05-21 23:22:53,656 - INFO - 验证文件: c:\Users\clark\Desktop\YAMLWeave\code\stub_processor.py
+2025-05-21 23:22:53,722 - INFO - 文件语法验证通过: c:\Users\clark\Desktop\YAMLWeave\code\stub_processor.py
+2025-05-21 23:22:53,722 - INFO - 验证文件: c:\Users\clark\Desktop\YAMLWeave\code\core\stub_parser.py
+2025-05-21 23:22:53,804 - INFO - 文件语法验证通过: c:\Users\clark\Desktop\YAMLWeave\code\core\stub_parser.py
+2025-05-21 23:22:53,805 - INFO - 验证文件: c:\Users\clark\Desktop\YAMLWeave\code\core\stub_processor.py
+2025-05-21 23:22:53,883 - INFO - 文件语法验证通过: c:\Users\clark\Desktop\YAMLWeave\code\core\stub_processor.py
+2025-05-21 23:22:53,883 - INFO - 验证文件: c:\Users\clark\Desktop\YAMLWeave\code\core\utils.py
+2025-05-21 23:22:53,989 - INFO - 文件语法验证通过: c:\Users\clark\Desktop\YAMLWeave\code\core\utils.py
+2025-05-21 23:22:53,989 - INFO - 验证文件: c:\Users\clark\Desktop\YAMLWeave\code\core\__init__.py
+2025-05-21 23:22:54,052 - INFO - 文件语法验证通过: c:\Users\clark\Desktop\YAMLWeave\code\core\__init__.py
+2025-05-21 23:22:54,053 - INFO - 验证文件: c:\Users\clark\Desktop\YAMLWeave\code\handlers\comment_handler.py
+2025-05-21 23:22:54,115 - INFO - 文件语法验证通过: c:\Users\clark\Desktop\YAMLWeave\code\handlers\comment_handler.py
+2025-05-21 23:22:54,115 - INFO - 验证文件: c:\Users\clark\Desktop\YAMLWeave\code\handlers\yaml_handler.py
+2025-05-21 23:22:54,179 - INFO - 文件语法验证通过: c:\Users\clark\Desktop\YAMLWeave\code\handlers\yaml_handler.py
+2025-05-21 23:22:54,181 - INFO - 验证文件: c:\Users\clark\Desktop\YAMLWeave\code\handlers\__init__.py
+2025-05-21 23:22:54,243 - INFO - 文件语法验证通过: c:\Users\clark\Desktop\YAMLWeave\code\handlers\__init__.py
+2025-05-21 23:22:54,243 - INFO - 生成版本号: 1.0.0_20250521_232254
+2025-05-21 23:22:54,243 - INFO - 创建spec文件...
+2025-05-21 23:22:54,244 - INFO - Spec文件已创建: c:\Users\clark\Desktop\YAMLWeave\code\YAMLWeave_1.0.0_20250521_232254.spec
+2025-05-21 23:22:54,244 - INFO - 开始PyInstaller打包...
+2025-05-21 23:23:06,365 - INFO - PyInstaller打包成功
+2025-05-21 23:23:06,367 - INFO - 验证打包结果...
+2025-05-21 23:23:06,367 - INFO - 打包结果验证通过
+2025-05-21 23:23:06,367 - INFO - 移动打包结果到code同级目录...
+2025-05-21 23:23:06,371 - INFO - 打包结果已移动到: c:\Users\clark\Desktop\YAMLWeave\YAMLWeave_1.0.0_20250521_232254
+2025-05-21 23:23:06,371 - INFO - 清理临时文件...
+2025-05-21 23:23:06,379 - INFO - 临时文件清理完成
+2025-05-21 23:23:06,379 - INFO - YAMLWeave 1.0.0_20250521_232254 打包完成!
+2025-05-21 23:23:06,379 - INFO - 打包结果位于: c:\Users\clark\Desktop\YAMLWeave\YAMLWeave_1.0.0_20250521_232254
