@@ -7,6 +7,7 @@ import logging
 import os
 import sys
 from datetime import datetime
+import glob
 
 # 日志级别映射
 LOG_LEVELS = {
@@ -309,19 +310,27 @@ def get_execution_logs():
     import time
     import tempfile
     import logging
+    import glob
     from datetime import datetime
     
     log_files = []
     
+    # 获取应用根目录
+    app_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    
     # 尝试多个可能的执行日志目录位置
     possible_dirs = [
         # 主执行日志目录
-        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "execution_logs"),
+        os.path.join(app_root, "execution_logs"),
         # 临时目录中的备份位置
         os.path.join(tempfile.gettempdir(), "yamlweave_logs"),
         # 直接临时目录（用于单个文件）
         tempfile.gettempdir()
     ]
+    
+    # 添加带时间戳的logs_YYYYMMDD_HHMMSS目录
+    logs_timestamp_dirs = glob.glob(os.path.join(app_root, "logs_*"))
+    possible_dirs.extend(logs_timestamp_dirs)
     
     for logs_dir in possible_dirs:
         try:
@@ -334,6 +343,7 @@ def get_execution_logs():
             
             # 遍历执行日志目录中的所有日志文件
             for filename in os.listdir(logs_dir):
+                # 只识别execution_*.log格式的执行日志文件
                 if filename.startswith("execution_") and filename.endswith(".log"):
                     try:
                         file_path = os.path.join(logs_dir, filename)
@@ -429,8 +439,18 @@ def get_execution_log_stats():
         execution_info = log.get("execution_info", {})
         stats = execution_info.get("stats", {})
         
-        total_processed_files += stats.get("updated_files", 0)
-        total_inserted_stubs += stats.get("inserted_stubs", 0)
+        # 安全获取统计值并累加
+        try:
+            updated_files = stats.get("updated_files", 0)
+            if updated_files and isinstance(updated_files, (int, float)):
+                total_processed_files += int(updated_files)
+                
+            inserted_stubs = stats.get("inserted_stubs", 0)
+            if inserted_stubs and isinstance(inserted_stubs, (int, float)):
+                total_inserted_stubs += int(inserted_stubs)
+        except (TypeError, ValueError):
+            # 忽略无法处理的值
+            pass
     
     return {
         "total_logs": len(log_files),

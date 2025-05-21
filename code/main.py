@@ -78,6 +78,7 @@ import uuid
 import datetime
 import shutil
 from utils.logger import setup_global_logger
+import glob
 
 setup_global_logger()
 
@@ -2113,9 +2114,28 @@ def main():
                             if latest_log:
                                 app_ui.log(f"[信息] 最近执行时间: {latest_log.get('modified_time_str', '未知')}", tag="info")
                             
-                            # 执行日志目录位置
+                            # 显示日志目录位置
+                            # 常规执行日志目录
                             exec_logs_dir = os.path.join(APP_ROOT, "execution_logs")
                             app_ui.log(f"[信息] 执行日志保存在: {exec_logs_dir}", tag="file")
+                            
+                            # 带时间戳的日志目录检测
+                            timestamp_logs = glob.glob(os.path.join(APP_ROOT, "logs_*"))
+                            if timestamp_logs:
+                                app_ui.log("[信息] 时间戳日志目录:", tag="info")
+                                # 只显示最新的3个时间戳日志目录
+                                timestamp_logs.sort(key=os.path.getmtime, reverse=True)
+                                for i, log_dir in enumerate(timestamp_logs[:3]):
+                                    app_ui.log(f"[信息] - {os.path.basename(log_dir)}", tag="file")
+                                    # 检查是否有主日志文件
+                                    main_log = os.path.join(log_dir, "yamlweave.log")
+                                    if os.path.exists(main_log):
+                                        app_ui.log(f"[信息]   * 主日志文件: yamlweave.log", tag="info")
+                                
+                                # 如果有更多，显示总数
+                                if len(timestamp_logs) > 3:
+                                    app_ui.log(f"[信息] - ...等 {len(timestamp_logs)} 个目录", tag="info")
+                            
                             app_ui.log("[信息] ========================================", tag="header")
                     except Exception as log_stats_error:
                         logger.error(f"获取执行日志统计信息失败: {str(log_stats_error)}")
