@@ -18,12 +18,21 @@ logger = logging.getLogger(__name__)
 class StubProcessor:
     """简化版的桩处理器类"""
     
-    def __init__(self, project_dir=None, yaml_file=None):
+    def __init__(self, project_dir=None, yaml_file=None, ui=None):
         self.project_dir = project_dir
         self.yaml_file = yaml_file
         self.yaml_config = {}
         self.stats = {"scanned_files": 0, "updated_files": 0, "inserted_stubs": 0, "failed_files": 0}
-        self.ui = None
+        self.ui = ui
+        
+        # 输出UI对象信息
+        print(f"\n=== StubProcessor初始化 ===")
+        print(f"UI对象存在: {ui is not None}")
+        if ui:
+            print(f"UI对象类型: {type(ui).__name__}")
+            print(f"UI对象ID: {id(ui)}")
+            print(f"UI对象方法: {[m for m in dir(ui) if not m.startswith('_') and callable(getattr(ui, m))][:5]}")
+        print(f"=== StubProcessor初始化结束 ===\n")
         
         # 加载YAML配置
         if yaml_file and os.path.exists(yaml_file):
@@ -32,8 +41,12 @@ class StubProcessor:
                     self.yaml_config = yaml.safe_load(f) or {}
                     if not self.yaml_config:
                         logger.warning(f"YAML配置文件为空或格式不正确: {yaml_file}")
+                        if self.ui:
+                            self.ui.log(f"[警告] YAML配置文件为空或格式不正确: {yaml_file}", tag="warning")
             except Exception as e:
                 logger.error(f"加载YAML配置失败: {str(e)}")
+                if self.ui:
+                    self.ui.log(f"[错误] 加载YAML配置失败: {str(e)}", tag="error")
     
     def process_files(self, callback=None):
         """
@@ -48,6 +61,20 @@ class StubProcessor:
         Returns:
             Tuple[bool, str, Dict]: (成功/失败, 消息, 统计信息)
         """
+        # 调试信息 - 输出实例信息
+        print("\n=== DEBUG STUB_PROCESSOR ===")
+        print(f"StubProcessor.process_files 被调用: {self.__class__.__name__}")
+        print(f"self.project_dir: {self.project_dir}")
+        print(f"self.yaml_file: {self.yaml_file}")
+        print(f"UI对象存在: {self.ui is not None}")
+        if self.ui:
+            print(f"UI对象ID: {id(self.ui)}")
+        
+        # 检查是否有钩子函数
+        print(f"anchor_hook存在: {hasattr(self, 'anchor_hook')}")
+        print(f"file_callback存在: {hasattr(self, 'file_callback')}")
+        print("=== DEBUG STUB_PROCESSOR END ===\n")
+        
         if not self.project_dir or not os.path.isdir(self.project_dir):
             error_msg = f"项目目录无效: {self.project_dir}"
             logger.error(error_msg)
@@ -59,6 +86,25 @@ class StubProcessor:
         self.stats = {"scanned_files": 0, "updated_files": 0, "inserted_stubs": 0, "failed_files": 0}
         # 全局TC统计
         self.tc_stats = {}
+        # 锚点详细信息存储
+        self.anchor_details = {}
+        
+        # 调试UI对象
+        if self.ui:
+            print(f"\n=== DEBUG UI 对象信息 ===")
+            print(f"UI对象类型: {type(self.ui).__name__}")
+            print(f"UI对象ID: {id(self.ui)}")
+            print(f"UI有log方法: {hasattr(self.ui, 'log')}")
+            print(f"UI有root属性: {hasattr(self.ui, 'root')}")
+            print(f"=== DEBUG UI 对象信息结束 ===\n")
+            # 测试UI日志功能
+            try:
+                self.ui.log("[信息] StubProcessor: UI日志测试", tag="info")
+                self.ui.log("[信息] 开始详细处理过程", tag="header")
+                print("UI日志测试成功")
+            except Exception as ui_error:
+                print(f"UI日志测试失败: {str(ui_error)}")
+                print(f"异常详情: {traceback.format_exc()}")
         
         # YAML配置健康检查
         if self.yaml_file:
@@ -158,6 +204,13 @@ class StubProcessor:
                     
                     logger.info(f"处理文件 ({i+1}/{total_files}): {file_path}")
                     
+                    # 在开始处理每个文件前向UI输出明确的信息
+                    if self.ui:
+                        try:
+                            self.ui.log(f"[文件] 开始处理: {os.path.basename(file_path)}", tag="file")
+                        except Exception as log_error:
+                            print(f"UI日志输出失败: {str(log_error)}")
+                    
                     # 读取文件内容
                     try:
                         with open(file_path, 'r', encoding='utf-8') as f:
@@ -221,8 +274,13 @@ class StubProcessor:
                         self.stats["failed_files"] += 1
                         continue
                     
-                    # 进度回调
-                    if callback:
+                    # 进度回调 - 使用注入的回调函数
+                    if hasattr(self, 'file_callback'):
+                        try:
+                            self.file_callback(file_path, updated)
+                        except Exception as e:
+                            print(f"文件回调异常: {str(e)}")
+                    elif callback:
                         callback(file_path, updated)
                 except Exception as e:
                     error_msg = f"处理文件 {file_path} 时出错: {str(e)}"
@@ -290,7 +348,7 @@ class StubProcessor:
             
             # 保存详细的项目检查执行日志到固定目录
             try:
-                # 导入logger模块中的save_execution_log函数
+                # 尝试导入logger模块中的save_execution_log函数
                 try:
                     from code.utils.logger import save_execution_log
                     logger.info("成功导入save_execution_log函数")
@@ -371,6 +429,85 @@ class StubProcessor:
                     stubbed_dir=stubbed_dir
                 )
                 
+                # 直接输出所有详细信息到UI，不依赖执行日志文件
+                if self.ui:
+                    self.ui.log("\n[信息] ===== 详细执行日志 =====", tag="header")
+                    self.ui.log(f"[信息] 执行时间: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                    self.ui.log(f"[信息] 项目目录: {self.project_dir}")
+                    self.ui.log(f"[信息] 备份目录: {backup_dir}")
+                    self.ui.log(f"[信息] 插桩结果目录: {stubbed_dir}")
+                    
+                    # 配置文件信息
+                    if hasattr(self, 'yaml_file') and self.yaml_file:
+                        self.ui.log(f"[信息] 使用YAML配置: {self.yaml_file}", tag="file")
+                        if hasattr(self, 'yaml_config') and self.yaml_config:
+                            test_cases = len(self.yaml_config.keys())
+                            self.ui.log(f"[信息] 配置中包含 {test_cases} 个测试用例", tag="stats")
+                    
+                    self.ui.log("\n[信息] ----- 执行统计 -----", tag="stats")
+                    self.ui.log(f"[统计] 总扫描文件数: {self.stats.get('scanned_files', 0)}")
+                    self.ui.log(f"[统计] 更新的文件数: {self.stats.get('updated_files', 0)}")
+                    self.ui.log(f"[统计] 插入的桩点数: {self.stats.get('inserted_stubs', 0)}")
+                    failed = self.stats.get('failed_files', 0)
+                    if failed > 0:
+                        self.ui.log(f"[统计] 处理失败文件: {failed}", tag="warning")
+                    
+                    # 处理测试用例统计数据
+                    if hasattr(self, 'tc_stats') and self.tc_stats:
+                        self.ui.log("\n[信息] ----- 测试用例详情 -----", tag="header")
+                        for tc_id, info in sorted(self.tc_stats.items()):
+                            file_count = len(info.get("files", []))
+                            anchor_count = info.get("anchors", 0)
+                            insert_count = info.get("inserted", 0)
+                            
+                            if insert_count > 0:
+                                tag = "success"
+                            elif anchor_count > 0:
+                                tag = "info"
+                            else:
+                                tag = "skip"
+                            
+                            self.ui.log(f"[用例] {tc_id}: {file_count}个文件, {anchor_count}个锚点, {insert_count}行代码", tag=tag)
+                            
+                            # 步骤详情（最多显示5个步骤）
+                            if "steps" in info:
+                                step_items = sorted(list(info["steps"].items()))
+                                display_steps = step_items[:5] if len(step_items) > 5 else step_items
+                                for step_id, step_info in display_steps:
+                                    seg_count = len(step_info.get('segments', {}))
+                                    insert_count = step_info.get('inserted', 0)
+                                    if insert_count > 0:
+                                        self.ui.log(f"[步骤] └─ {step_id}: {seg_count}个代码段, 插入{insert_count}行代码", tag="success")
+                                    else:
+                                        self.ui.log(f"[步骤] └─ {step_id}: {seg_count}个代码段", tag="info")
+                                if len(step_items) > 5:
+                                    self.ui.log(f"[步骤] ...还有{len(step_items)-5}个步骤未显示...", tag="info")
+                    
+                    # 添加插桩详细信息
+                    self.ui.log("\n[信息] ----- 锚点摘要 -----", tag="header")
+                    if hasattr(self, 'anchor_details') and self.anchor_details:
+                        for idx, (file_path, details) in enumerate(sorted(self.anchor_details.items())[:10]):  # 最多显示10个文件
+                            file_name = os.path.basename(file_path)
+                            self.ui.log(f"[文件] {file_name}: {len(details)}个锚点", tag="file")
+                            for anchor_idx, anchor_info in enumerate(sorted(details[:3])):  # 每个文件最多显示3个锚点
+                                tc_id = anchor_info.get('tc_id', '未知')
+                                step_id = anchor_info.get('step_id', '未知')
+                                segment_id = anchor_info.get('segment_id', '未知')
+                                line_num = anchor_info.get('line', 0)
+                                success = anchor_info.get('success', False)
+                                if success:
+                                    self.ui.log(f"[插桩] └─ 第{line_num}行: {tc_id} {step_id} {segment_id} 插桩成功", tag="success")
+                                else:
+                                    self.ui.log(f"[插桩] └─ 第{line_num}行: {tc_id} {step_id} {segment_id} 未找到桩代码", tag="warning")
+                            if len(details) > 3:
+                                self.ui.log(f"[文件] └─ ...还有{len(details)-3}个锚点未显示...", tag="info")
+                        if len(self.anchor_details) > 10:
+                            self.ui.log(f"[信息] ...还有{len(self.anchor_details)-10}个文件未显示...", tag="info")
+                    else:
+                        self.ui.log("[信息] 未找到有效锚点", tag="warning")
+                    
+                    self.ui.log("\n[信息] ===== 执行完成 =====", tag="header")
+                    
                 if exec_log_path:
                     logger.info(f"执行日志已保存: {exec_log_path}")
                     if self.ui:
@@ -409,6 +546,17 @@ class StubProcessor:
             file_path: 文件路径
             callback: 可选回调函数，用于报告处理进度
         """
+        # 调试信息 - 进入方法
+        print(f"\n=== DEBUG PROCESS_SINGLE_FILE ===")
+        print(f"处理文件: {file_path}")
+        print(f"UI对象存在: {self.ui is not None}")
+        if self.ui:
+            print(f"UI对象ID: {id(self.ui)}")
+        print(f"=== DEBUG PROCESS_SINGLE_FILE END ===\n")
+        
+        # 保存当前处理的文件路径，供拦截函数使用
+        self.current_file = file_path
+        
         lines = content.splitlines()
         new_lines = []
         i = 0
@@ -425,6 +573,9 @@ class StubProcessor:
         try:
             total_lines = len(lines)
             while i < total_lines:
+                # 更新当前处理的行号，供拦截函数使用
+                self.current_line = i + 1
+                
                 # 调用进度回调
                 if callback:
                     progress = int((i / total_lines) * 100)
@@ -435,80 +586,184 @@ class StubProcessor:
                 
                 # 查找锚点 (TC001 STEP1 segment1 格式)
                 if '//' in line and 'TC' in line and 'STEP' in line:
-                    try:
-                        # 提取注释部分
-                        comment_start = line.find('//')
-                        comment_text = line[comment_start+2:].strip()
+                    # 直接输出到控制台
+                    print(f"\n==== 可能的锚点 ====")
+                    print(f"文件: {filename}")
+                    print(f"行号: {i+1}")
+                    print(f"内容: {line.strip()}")
+                    print("==================\n")
+                    
+                    # 提取注释部分
+                    comment_start = line.find('//')
+                    comment_text = line[comment_start+2:].strip()
+                    
+                    # 分离锚点和注释
+                    comment_parts = comment_text.split()
+                    
+                    # 检查是否有足够的部分形成锚点
+                    if len(comment_parts) >= 3:
+                        tc_id = comment_parts[0].upper()
+                        step_id = comment_parts[1].upper()
+                        segment_id = comment_parts[2].lower()
                         
-                        # 分离锚点和注释
-                        comment_parts = comment_text.split()
+                        # 记录找到锚点
+                        file_anchors_count += 1
+                        anchor_desc = f"{tc_id} {step_id} {segment_id}"
                         
-                        # 检查是否有足够的部分形成锚点
-                        if len(comment_parts) >= 3 and comment_parts[0].upper().startswith('TC') and comment_parts[1].upper().startswith('STEP'):
-                            tc_id = comment_parts[0].upper()
-                            step_id = comment_parts[1].upper()
-                            segment_id = comment_parts[2].lower()
-                            
-                            # 记录找到锚点
-                            file_anchors_count += 1
-                            anchor_desc = f"{tc_id} {step_id} {segment_id}"
-                            
-                            # 统计到TC级别
-                            if tc_id not in file_tc_stats:
-                                file_tc_stats[tc_id] = {"anchors": 0, "steps": {}, "inserted": 0}
-                            file_tc_stats[tc_id]["anchors"] += 1
-                            
-                            # 统计到STEP级别
-                            if step_id not in file_tc_stats[tc_id]["steps"]:
-                                file_tc_stats[tc_id]["steps"][step_id] = {"segments": {}}
-                            
-                            # 统计到segment级别
-                            if segment_id not in file_tc_stats[tc_id]["steps"][step_id]["segments"]:
-                                file_tc_stats[tc_id]["steps"][step_id]["segments"][segment_id] = 0
-                            file_tc_stats[tc_id]["steps"][step_id]["segments"][segment_id] += 1
-                            
-                            # 详细日志
-                            logger.info(f"文件 {filename} 锚点: {tc_id} {step_id} {segment_id}")
-                            
-                            # 查找传统模式的code注释
-                            j = i + 1
-                            traditional_code = None
-                            if j < len(lines) and ('// code:' in lines[j].lower() or '//code:' in lines[j].lower()):
-                                code_line = lines[j]
-                                code_start = max(code_line.lower().find('// code:') + 8, code_line.lower().find('//code:') + 7)
-                                traditional_code = code_line[code_start:].strip()
-                                logger.info(f"找到传统模式code注释: {anchor_desc}")
-                            
-                            # 查找YAML配置中的桩代码
-                            yaml_code = self.find_stub_code(tc_id, step_id, segment_id)
-                            
-                            # 优先使用YAML配置中的桩代码，如果没有再使用传统模式的code
-                            code_to_insert = yaml_code or traditional_code
-                            
-                            if code_to_insert:
-                                # 处理并添加代码
-                                indent = len(line) - len(line.lstrip())
-                                indent_str = ' ' * indent
-                                stub_lines = code_to_insert.splitlines()
+                        # 直接输出到控制台
+                        print(f"\n==== 确认锚点 ====")
+                        print(f"文件: {filename}")
+                        print(f"行号: {i+1}")
+                        print(f"锚点: {tc_id} {step_id} {segment_id}")
+                        print("=================\n")
+                        
+                        # 使用钩子函数输出锚点信息 - 如果存在
+                        if hasattr(self, 'anchor_hook'):
+                            try:
+                                self.anchor_hook(os.path.basename(file_path), i+1, tc_id, step_id, segment_id)
+                            except Exception as e:
+                                print(f"使用钩子函数输出锚点信息失败: {str(e)}")
+                                import traceback
+                                print(traceback.format_exc())
+                        
+                        # 使用UI直接强制输出锚点信息
+                        if self.ui:
+                            try:
+                                # 构造标准锚点信息消息
+                                anchor_message = f"[锚点] 在文件 {filename} 的第 {i+1} 行找到锚点: {tc_id} {step_id} {segment_id}"
+                                # 直接插入到Text控件
+                                if hasattr(self.ui, 'log_text'):
+                                    import tkinter as tk
+                                    import datetime
+                                    timestamp = datetime.datetime.now().strftime("[%H:%M:%S] ")
+                                    self.ui.log_text.insert(tk.END, timestamp + anchor_message + "\n", "find")
+                                    self.ui.log_text.see(tk.END)
+                                    self.ui.log_text.update_idletasks()
+                                # 使用UI对象的log方法
+                                self.ui.log(anchor_message, tag="find")
+                                self.ui.log(f"[代码] {line.strip()}", tag="info")
+                            except Exception as e:
+                                print(f"向UI输出锚点信息失败: {str(e)}")
+                                import traceback
+                                print(traceback.format_exc())
+                        
+                        # 使用辅助方法直接输出锚点信息到UI
+                        if hasattr(self, 'display_anchor'):
+                            self.display_anchor(filename, i+1, tc_id, step_id, segment_id)
+                        
+                        # 统计到TC级别
+                        if tc_id not in file_tc_stats:
+                            file_tc_stats[tc_id] = {"anchors": 0, "steps": {}, "inserted": 0}
+                        file_tc_stats[tc_id]["anchors"] += 1
+                        
+                        # 统计到STEP级别
+                        if step_id not in file_tc_stats[tc_id]["steps"]:
+                            file_tc_stats[tc_id]["steps"][step_id] = {"segments": {}, "inserted": 0}
+                        
+                        # 统计到segment级别
+                        if segment_id not in file_tc_stats[tc_id]["steps"][step_id]["segments"]:
+                            file_tc_stats[tc_id]["steps"][step_id]["segments"][segment_id] = 0
+                        file_tc_stats[tc_id]["steps"][step_id]["segments"][segment_id] += 1
+                        
+                        # 收集锚点详情用于生成报告
+                        if not hasattr(self, 'anchor_details'):
+                            self.anchor_details = {}
+                        if file_path not in self.anchor_details:
+                            self.anchor_details[file_path] = []
+                        
+                        # 收集锚点信息
+                        anchor_info = {
+                            'tc_id': tc_id,
+                            'step_id': step_id,
+                            'segment_id': segment_id,
+                            'line': i+1,
+                            'success': False  # 默认为False，如果找到桩代码并插入则设为True
+                        }
+                        self.anchor_details[file_path].append(anchor_info)
+                        
+                        # 立即向UI输出锚点信息
+                        if self.ui:
+                            print(f"向UI发送锚点信息: {filename} 行 {i+1}: {tc_id} {step_id} {segment_id}")
+                            try:
+                                # 直接构造消息并同步输出到UI，不使用异步方式
+                                anchor_message = f"[锚点] 在文件 {filename} 的第 {i+1} 行找到锚点: {tc_id} {step_id} {segment_id}"
+                                print(f"发送消息: {anchor_message}")
                                 
-                                # 记录桩代码插入详情
-                                code_source = "YAML配置" if yaml_code else "传统注释"
-                                logger.info(f"插入 {tc_id} {step_id} {segment_id} 桩代码 (来源: {code_source}, {len(stub_lines)}行)")
+                                # 直接调用UI日志方法，不使用after或lambda
+                                self.ui.log(anchor_message, tag="find")
                                 
-                                # 添加桩代码行
-                                for stub_line in stub_lines:
-                                    new_lines.append(f"{indent_str}{stub_line}  // 通过桩插入")
-                                    file_stubs_inserted += 1
-                                    self.stats["inserted_stubs"] += 1
+                                # 锚点代码内容显示
+                                line_content = line.strip()
+                                self.ui.log(f"[代码] {line_content}", tag="info")
                                 
-                                # 记录到TC统计
-                                file_tc_stats[tc_id]["inserted"] += len(stub_lines)
-                            else:
-                                logger.warning(f"未找到 {tc_id} {step_id} {segment_id} 对应的桩代码")
-                    except Exception as anchor_error:
-                        # 处理单个锚点时出错，记录错误但继续处理其他锚点
-                        logger.error(f"处理锚点时出错: {str(anchor_error)} 行号: {i+1}, 内容: {line}")
-                        logger.error(traceback.format_exc())
+                                # 验证日志输出
+                                print(f"UI日志调用成功，锚点信息和代码内容已显示")
+                            except Exception as e:
+                                print(f"UI日志调用异常: {str(e)}")
+                                print(f"异常详情: {traceback.format_exc()}")
+                                # 尝试确认UI对象和方法存在
+                                print(f"UI存在: {self.ui is not None}")
+                                if self.ui:
+                                    print(f"UI类型: {type(self.ui).__name__}")
+                                    print(f"UI log方法存在: {hasattr(self.ui, 'log')}")
+                                    if hasattr(self.ui, 'log'):
+                                        print(f"log方法类型: {type(self.ui.log).__name__}")
+                        
+                        # 查找传统模式的code注释
+                        j = i + 1
+                        traditional_code = None
+                        if j < len(lines) and ('// code:' in lines[j].lower() or '//code:' in lines[j].lower()):
+                            code_line = lines[j]
+                            code_start = max(code_line.lower().find('// code:') + 8, code_line.lower().find('//code:') + 7)
+                            traditional_code = code_line[code_start:].strip()
+                            logger.info(f"找到传统模式code注释: {anchor_desc}")
+                        
+                        # 查找YAML配置中的桩代码
+                        yaml_code = self.find_stub_code(tc_id, step_id, segment_id)
+                        
+                        # 优先使用YAML配置中的桩代码，如果没有再使用传统模式的code
+                        code_to_insert = yaml_code or traditional_code
+                        
+                        if code_to_insert:
+                            # 处理并添加代码
+                            indent = len(line) - len(line.lstrip())
+                            indent_str = ' ' * indent
+                            stub_lines = code_to_insert.splitlines()
+                            
+                            # 记录桩代码插入详情
+                            code_source = "YAML配置" if yaml_code else "传统注释"
+                            logger.info(f"插入 {tc_id} {step_id} {segment_id} 桩代码 (来源: {code_source}, {len(stub_lines)}行)")
+                            
+                            # 向UI输出插桩详情
+                            if self.ui:
+                                self.ui.log(f"[插桩] 在文件 {filename} 第 {i+1} 行插入 {tc_id} {step_id} {segment_id} 桩代码 ({len(stub_lines)}行)", tag="insert")
+                                # 最多显示3行代码预览
+                                preview_lines = stub_lines[:3] if len(stub_lines) > 3 else stub_lines
+                                for idx, preview in enumerate(preview_lines):
+                                    self.ui.log(f"[代码] {' '*4}{preview}", tag="info")
+                                if len(stub_lines) > 3:
+                                    self.ui.log(f"[代码] {' '*4}...还有 {len(stub_lines)-3} 行未显示...", tag="info")
+                            
+                            # 添加桩代码行
+                            for stub_line in stub_lines:
+                                new_lines.append(f"{indent_str}{stub_line}  // 通过桩插入")
+                                file_stubs_inserted += 1
+                                self.stats["inserted_stubs"] += 1
+                                
+                                # 更新锚点详情，标记插入成功
+                                for anchor in self.anchor_details.get(file_path, []):
+                                    if (anchor['tc_id'] == tc_id and 
+                                        anchor['step_id'] == step_id and 
+                                        anchor['segment_id'] == segment_id and 
+                                        anchor['line'] == i+1):
+                                        anchor['success'] = True
+                                        anchor['inserted_lines'] = len(stub_lines)
+                                        break
+                            
+                            # 记录到TC统计
+                            file_tc_stats[tc_id]["inserted"] += len(stub_lines)
+                        else:
+                            logger.warning(f"未找到 {tc_id} {step_id} {segment_id} 对应的桩代码")
                 i += 1
             
             # 文件级别TC统计输出
