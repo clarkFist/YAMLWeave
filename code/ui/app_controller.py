@@ -12,6 +12,7 @@ import traceback
 import shutil
 import datetime
 from typing import Callable, Dict, List, Optional, Any, Tuple
+from ..utils.logger import add_ui_handler
 
 # 定义一个模拟的StubProcessor类，在无法导入真实类时使用
 class MockStubProcessor:
@@ -375,6 +376,11 @@ class AppController:
         self.logger = logging.getLogger('yamlweave')
         self.logger.setLevel(logging.INFO)
         # 不再单独添加文件handler，全部由全局setup_global_logger统一管理
+        if self.ui:
+            try:
+                add_ui_handler(self.ui)
+            except Exception as e:
+                self.logger.error(f"添加UI日志处理器失败: {str(e)}")
     
     def log_info(self, message):
         """记录信息级别日志"""
