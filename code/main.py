@@ -162,27 +162,32 @@ logger = setup_logger()
 
 # 尝试导入核心模块
 try:
-    # 使用相对导入方式
+    # 默认从 code 包导入
     from code.core.stub_processor import StubProcessor
     from code.ui.app_ui import YAMLWeaveUI
     from code.ui.app_controller import AppController
-    
-    logger.info("成功导入核心模块")
+    logger.info("成功导入核心模块 (code 前缀)")
 except ImportError as e:
-    logger.error(f"导入核心模块失败: {str(e)}")
-    # 尝试调整路径后导入
+    logger.warning(f"从 code 前缀导入失败: {str(e)}，尝试无前缀导入")
     try:
-        # 尝试导入绝对路径
-        sys.path.insert(0, os.path.join(APP_ROOT, "code"))
-        from code.core.stub_processor import StubProcessor
-        from code.ui.app_ui import YAMLWeaveUI
-        from code.ui.app_controller import AppController
-        
-        logger.info("成功通过调整路径导入核心模块")
-    except Exception as inner_e:
-        logger.error(f"调整路径后导入核心模块仍然失败: {str(inner_e)}")
-        messagebox.showerror("导入错误", "无法导入核心处理模块，请确保项目结构完整")
-        sys.exit(1)
+        # 尝试无需 code 前缀的导入以兼容旧的打包结构
+        from core.stub_processor import StubProcessor
+        from ui.app_ui import YAMLWeaveUI
+        from ui.app_controller import AppController
+        logger.info("成功导入核心模块 (无前缀)")
+    except ImportError as inner_e:
+        logger.error(f"无前缀导入仍然失败: {str(inner_e)}")
+        # 尝试调整 sys.path 后再次导入 code 前缀模块
+        try:
+            sys.path.insert(0, os.path.join(APP_ROOT, "code"))
+            from code.core.stub_processor import StubProcessor
+            from code.ui.app_ui import YAMLWeaveUI
+            from code.ui.app_controller import AppController
+            logger.info("成功在调整路径后导入核心模块")
+        except Exception as final_e:
+            logger.error(f"调整路径后导入核心模块仍然失败: {str(final_e)}")
+            messagebox.showerror("导入错误", "无法导入核心处理模块，请确保项目结构完整")
+            sys.exit(1)
 except Exception as e:
     logger.error(f"导入核心模块失败: {str(e)}")
     import traceback
