@@ -78,25 +78,41 @@ def get_encoding(file_path: str) -> str:
 
 def read_file_lines(file_path: str, fallback_encodings: Optional[List[str]] = None) -> List[str]:
     """
-    读取文件行列表，支持编码自动检测
-    
+    读取文件行列表，首先尝试使用自动检测的编码。
+    如果读取失败，则依次使用 ``fallback_encodings`` 中的编码再次尝试。
+
     Args:
         file_path: 文件路径
         fallback_encodings: 回退编码列表
-    
+
     Returns:
         List[str]: 文件行列表
     """
-    return read_file(file_path)
+    if fallback_encodings is None:
+        fallback_encodings = []
+
+    encoding = detect_encoding(file_path)
+    encodings_to_try = [encoding] + [e for e in fallback_encodings if e != encoding]
+
+    for enc in encodings_to_try:
+        try:
+            with open(file_path, "r", encoding=enc) as f:
+                return f.readlines()
+        except Exception as e:
+            logger.warning(f"使用编码 {enc} 读取文件失败: {e}")
+
+    logger.error(f"无法读取文件: {file_path}")
+    return []
 
 def read_file_lines_with_fallback_encoding(file_path: str, fallback_encodings: Optional[List[str]] = None) -> List[str]:
     """
-    读取文件行列表，支持回退编码
-    
+    读取文件行列表，与 :func:`read_file_lines` 行为相同。
+    提供此函数是为了兼容旧代码。
+
     Args:
         file_path: 文件路径
-        fallback_encodings: 回退编码列表
-    
+        fallback_encodings: 回退编码列表，当自动检测失败时依次尝试这些编码
+
     Returns:
         List[str]: 文件行列表
     """
