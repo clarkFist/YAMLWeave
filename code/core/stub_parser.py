@@ -33,6 +33,7 @@ if not logger.hasHandlers():
     logger.addHandler(handler)
 
 # 导入YAML处理器
+
 # 在不同运行环境(如 PyInstaller 打包后)中模块路径可能变化，
 # 因此这里遍历多种可能的导入路径。
 YamlStubHandler = None
@@ -54,6 +55,8 @@ for _mod in _candidate_modules:
         logger.debug(f"通过 {_mod} 导入YamlStubHandler 失败: {err}")
 if YamlStubHandler is None:
     logger.error("无法导入YamlStubHandler，锚点与桩代码分离功能将不可用")
+
+
 
 # 导入文件处理工具函数
 try:
