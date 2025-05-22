@@ -7,8 +7,19 @@ import os
 import yaml
 from typing import Dict, Any, List, Optional
 
-from YAMLWeave.utils.logger import get_logger
-from YAMLWeave.utils.exceptions import ConfigError
+# 尝试相对导入以兼容打包后的路径结构
+try:
+    from .logger import get_logger
+    from .exceptions import ConfigError
+except Exception:  # pragma: no cover - 回退到绝对导入
+    try:
+        from utils.logger import get_logger
+        from utils.exceptions import ConfigError
+    except Exception:
+        import logging
+        get_logger = lambda name=None: logging.getLogger(name)
+        class ConfigError(Exception):
+            pass
 
 logger = get_logger(__name__)
 

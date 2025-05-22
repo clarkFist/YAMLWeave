@@ -75,6 +75,14 @@ def clean_old_files():
             logger.info(f"删除spec文件: {file}")
             os.remove(os.path.join(SCRIPT_DIR, file))
 
+    # 递归删除 __pycache__ 目录，避免旧的字节码被打包
+    for root, dirs, _ in os.walk(PROJECT_DIR):
+        for d in dirs:
+            if d == "__pycache__":
+                pycache_path = os.path.join(root, d)
+                logger.info(f"删除__pycache__目录: {pycache_path}")
+                shutil.rmtree(pycache_path, ignore_errors=True)
+
 def generate_version():
     """生成带时间戳的版本号"""
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
