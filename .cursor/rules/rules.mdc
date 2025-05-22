@@ -1,0 +1,72 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+
+该仓库实现了用于 C 语言自动插桩的工具 **YAMLWeave**。项目既能从代码注释直接插桩（传统模式），也能在源文件中留下锚点，通过 YAML 配置插入桩代码（分离模式）。代码主要位于 `code/` 目录，既提供 GUI 也提供 CLI，同时包含 PyInstaller 打包脚本。
+
+
+## 目录结构
+
+- `code/core/`  
+  - `stub_processor.py`：桩处理核心，负责遍历目录、备份文件、插入代码。  
+  - `stub_parser.py`：解析 C 文件注释及锚点。  
+  - `utils.py`：文件读写与编码处理等辅助函数。  
+- `code/handlers/`  
+  - `yaml_handler.py`：加载并管理 YAML 配置，提供桩代码查询。  
+  - `comment_handler.py`：在文件中查找插入点并写入桩代码。  
+- `code/utils/`  
+  - `logger.py`：日志设置和 UI 日志适配。  
+  - `file_utils.py`、`config.py` 等通用工具。  
+- `code/ui/`  
+  - `app_ui.py`：Tkinter 图形界面。  
+  - `app_controller.py`：连接 UI 与核心处理逻辑。  
+- 其它关键文件  
+  - `code/main.py`：程序入口，可启动 GUI 或生成示例。  
+  - `code/cli/main.py`：命令行接口。  
+  - `code/pack.py`：PyInstaller 打包脚本。  
+- 文档  
+  - `readme.md`、`cursorrules.md`、`YamlWeave项目架构设计文档.md`：功能、流程及设计说明。
+
+---
+
+## 主要功能
+
+1. **传统模式**  
+   - 在源代码内写入  
+     `// TC001 STEP1: 描述`  
+     `// code: …`  
+   - 解析注释中的 `code` 字段后直接插入。
+
+2. **分离模式**  
+   - 源文件只含锚点 `// TC001 STEP1 segment1`。  
+   - 桩代码在 YAML 文件中以块格式或列表形式存放，`yaml_handler` 根据 (测试用例ID、步骤ID、代码段ID) 返回代码内容。  
+
+3. **多文件及备份**  
+   - 扫描选定目录下的 `.c`/`.h` 文件。  
+   - 自动生成备份目录 `*_backup_YYYYMMDD_HHMMSS` 与结果目录 `*_stubbed_YYYYMMDD_HHMMSS`，保持原始结构，仅修改含锚点的文件。
+
+4. **日志与统计**  
+   - 所有运行日志写入 `logs_时间戳/yamlweave.log`。  
+   - 处理完毕输出文件数量、成功插入桩点数、失败详情等统计信息。
+
+5. **GUI 与 CLI**  
+   - 图形界面可浏览目录、选择 YAML，点击“扫描并插入”执行。  
+
+## 开发约定
+
+- 使用 **Python 3.7+**，遵循 **PEP 8**。源文件采用 UTF‑8 编码。
+- 主要类和函数须包含 docstring；注释中可使用中英文混合，但保持与现有风格一致。
+- 新功能应遵循模块化设计：
+  - 核心逻辑放在 `code/core/`。
+  - 与文件或注释处理相关的放在 `code/handlers/`。
+  - 工具函数放在 `code/utils/`。
+  - 交互层（GUI/CLI）位于 `code/ui/` 或 `code/cli/`。
+- 日志统一通过 `code/utils/logger.py` 配置，如需在 UI 中显示日志，使用 `UILogger`。
+- 修改或新增代码时注意兼容两种模式（传统与分离），保持备份与结果目录逻辑不变。
+- 打包流程通过 `code/pack.py` 调用 PyInstaller；如需扩展，请更新 spec 文件并保持可执行路径正确。
+
+ 
+
