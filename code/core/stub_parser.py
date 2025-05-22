@@ -10,6 +10,7 @@
 
 import re
 import os
+import logging
 from typing import List, Dict, Any, Optional, Tuple
 
 # 导入日志工具
@@ -19,7 +20,6 @@ except Exception:
     try:
         from utils.logger import get_logger
     except Exception:
-        import logging
         get_logger = None
         logger = logging.getLogger(__name__)
 
