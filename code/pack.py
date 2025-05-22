@@ -120,12 +120,20 @@ a = Analysis(
         (os.path.join(PROJECT_ROOT, '__init__.py'), '__init__.py'),
         (os.path.join(CODE_DIR, '__init__.py'), 'code/__init__.py'),
     ],
-    hiddenimports=[
-        'code', 'code.ui', 'code.ui.app_ui', 'code.ui.app_controller',
-        'code.core', 'code.core.stub_processor', 'code.core.stub_parser', 'code.core.utils',
-        'code.utils', 'code.utils.logger', 'code.utils.exceptions',
-        'code.handlers', 'code.handlers.comment_handler', 'code.handlers.yaml_handler',
-        'yaml', 'tkinter', 'tkinter.filedialog', 'tkinter.messagebox', 'pathlib', 'datetime'
+hiddenimports = [
+    # ── 应用自身 ───────────────────────────────────────────────
+    'code', 'code.ui', 'code.ui.app_ui', 'code.ui.app_controller',
+    'code.core', 'code.core.stub_processor', 'code.core.stub_parser', 'code.core.utils',
+    'code.utils', 'code.utils.logger', 'code.utils.exceptions',
+    'code.handlers', 'code.handlers.comment_handler', 'code.handlers.yaml_handler',
+
+    # ── 第三方 / 标准库 ───────────────────────────────────────
+    'yaml',
+    'tkinter', 'tkinter.filedialog', 'tkinter.messagebox',
+    'tkinter.ttk', 'tkinter.scrolledtext', 'tkinter.font',
+    'pathlib', 'datetime',
+]
+
     ],
     hookspath=[],
     hooksconfig={{}},

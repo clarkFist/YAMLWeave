@@ -25,7 +25,7 @@ except Exception:
 
 if get_logger:
     logger = get_logger(__name__)
-if not logger.handlers:
+if not logger.hasHandlers():
     logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
