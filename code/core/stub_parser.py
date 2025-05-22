@@ -11,6 +11,7 @@
 import re
 import os
 import logging
+import importlib
 from typing import List, Dict, Any, Optional, Tuple
 
 # 导入日志工具
@@ -32,25 +33,30 @@ if not logger.hasHandlers():
     logger.addHandler(handler)
 
 # 导入YAML处理器
-# 为了在不同的运行环境(如PyInstaller打包后)都能正常导入，
-# 这里尝试多种导入路径，并在失败时记录详细日志。
+
+# 在不同运行环境(如 PyInstaller 打包后)中模块路径可能变化，
+# 因此这里遍历多种可能的导入路径。
 YamlStubHandler = None
-try:
-    # 优先尝试绝对导入，以兼容打包后的模块结构
-    from code.handlers.yaml_handler import YamlStubHandler  # type: ignore
-    logger.info("成功通过绝对路径导入YamlStubHandler")
-except Exception as abs_err:
-    logger.warning(f"绝对路径导入YamlStubHandler失败: {abs_err}")
+_candidate_modules = [
+    "code.handlers.yaml_handler",
+    "handlers.yaml_handler",
+    "yamlweave.handlers.yaml_handler",
+    "yamlweave.code.handlers.yaml_handler",
+    "YAMLWeave.handlers.yaml_handler",
+    "YAMLWeave.code.handlers.yaml_handler",
+]
+for _mod in _candidate_modules:
     try:
-        # 常规相对导入（源码运行时的路径）
-        from ..handlers.yaml_handler import YamlStubHandler  # type: ignore
-        logger.info("成功通过相对路径导入YamlStubHandler")
-    except Exception as rel_err:
-        logger.error(
-            "无法导入YamlStubHandler，锚点与桩代码分离功能将不可用"
-        )
-        logger.error(f"详细错误: {rel_err}")
-        YamlStubHandler = None
+        module = importlib.import_module(_mod)  # type: ignore
+        YamlStubHandler = getattr(module, "YamlStubHandler")
+        logger.info(f"成功通过 {_mod} 导入YamlStubHandler")
+        break
+    except Exception as err:
+        logger.debug(f"通过 {_mod} 导入YamlStubHandler 失败: {err}")
+if YamlStubHandler is None:
+    logger.error("无法导入YamlStubHandler，锚点与桩代码分离功能将不可用")
+
+
 
 # 导入文件处理工具函数
 try:
