@@ -9,6 +9,14 @@ import sys
 from datetime import datetime
 import glob
 
+
+def get_app_root():
+    """Return base directory for logs depending on runtime environment."""
+    if getattr(sys, "frozen", False):
+        # Running inside bundled executable
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 # 日志级别映射
 LOG_LEVELS = {
     'debug': logging.DEBUG,
@@ -23,10 +31,9 @@ DEFAULT_LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
 # 统一生成时间戳日志目录和文件
 TIMESTAMP = datetime.now().strftime('%Y%m%d_%H%M%S')
-LOGS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), f'logs_{TIMESTAMP}')
-if not os.path.exists(LOGS_DIR):
-    os.makedirs(LOGS_DIR)
-LOG_FILE = os.path.join(LOGS_DIR, 'yamlweave.log')
+LOGS_DIR = os.path.join(get_app_root(), f"logs_{TIMESTAMP}")
+os.makedirs(LOGS_DIR, exist_ok=True)
+LOG_FILE = os.path.join(LOGS_DIR, "yamlweave.log")
 
 class UILogHandler(logging.Handler):
     """将日志消息转发到UI的处理器"""
@@ -237,9 +244,8 @@ def save_execution_log(stats, project_dir, backup_dir=None, stubbed_dir=None):
     
     # 创建带时间戳的日志目录
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), f'logs_{timestamp}')
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
+    log_dir = os.path.join(get_app_root(), f'logs_{timestamp}')
+    os.makedirs(log_dir, exist_ok=True)
     
     # 创建带时间戳的执行日志文件
     log_filename = f"execution_{timestamp}.log"
@@ -353,7 +359,7 @@ def get_execution_logs():
     log_files = []
     
     # 获取应用根目录
-    app_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    app_root = get_app_root()
     
     # 尝试多个可能的执行日志目录位置
     possible_dirs = [
