@@ -23,7 +23,7 @@ except Exception:
             pass
 
 logger = get_logger(__name__) if get_logger else logging.getLogger(__name__)
-if not logger.handlers:
+if not logger.hasHandlers():
     logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
     logger.addHandler(handler)

@@ -8,6 +8,7 @@ YAML处理器模块
 
 import os
 import yaml
+import logging
 from typing import Dict, List, Any, Optional, Tuple
 
 try:
@@ -16,13 +17,12 @@ except Exception:
     try:
         from utils.logger import get_logger
     except Exception:
-        import logging
         get_logger = None
         logger = logging.getLogger(__name__)
 
 if get_logger:
     logger = get_logger(__name__)
-if not logger.handlers:
+if not logger.hasHandlers():
     logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
