@@ -11,11 +11,18 @@ import yaml
 from typing import Dict, List, Any, Optional, Tuple
 
 try:
-    from YAMLWeave.utils.logger import get_logger
+    from ..utils.logger import get_logger
+except Exception:
+    try:
+        from utils.logger import get_logger
+    except Exception:
+        import logging
+        get_logger = None
+        logger = logging.getLogger(__name__)
+
+if get_logger:
     logger = get_logger(__name__)
-except ImportError:
-    import logging
-    logger = logging.getLogger(__name__)
+if not logger.handlers:
     logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))

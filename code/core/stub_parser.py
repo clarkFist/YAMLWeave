@@ -14,11 +14,18 @@ from typing import List, Dict, Any, Optional, Tuple
 
 # 导入日志工具
 try:
-    from YAMLWeave.utils.logger import get_logger
+    from ..utils.logger import get_logger
+except Exception:
+    try:
+        from utils.logger import get_logger
+    except Exception:
+        import logging
+        get_logger = None
+        logger = logging.getLogger(__name__)
+
+if get_logger:
     logger = get_logger(__name__)
-except ImportError:
-    import logging
-    logger = logging.getLogger(__name__)
+if not logger.handlers:
     logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
@@ -26,19 +33,20 @@ except ImportError:
 
 # 导入YAML处理器
 try:
-    from YAMLWeave.handlers.yaml_handler import YamlStubHandler
-except ImportError:
-    logger.error("无法导入YamlStubHandler，锚点与桩代码分离功能将不可用")
-    YamlStubHandler = None
+    from ..handlers.yaml_handler import YamlStubHandler
+except Exception:
+    try:
+        from handlers.yaml_handler import YamlStubHandler
+    except Exception:
+        logger.error("无法导入YamlStubHandler，锚点与桩代码分离功能将不可用")
+        YamlStubHandler = None
 
 # 导入文件处理工具函数
 try:
-    # 尝试从YAMLWeave包导入
-    from YAMLWeave.core.utils import read_file, write_file
-except ImportError:
+    from ..core.utils import read_file, write_file
+except Exception:
     try:
-        # 尝试从当前目录导入
-        from utils import read_file, write_file
+        from code.core.utils import read_file, write_file
     except ImportError:
         try:
             # 尝试相对导入

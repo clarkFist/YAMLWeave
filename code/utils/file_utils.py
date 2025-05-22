@@ -9,12 +9,21 @@ import logging
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Union
 
+# 尝试相对或绝对导入日志与异常处理，以兼容不同的包结构
 try:
-    from YAMLWeave.utils.logger import get_logger
-    from YAMLWeave.utils.exceptions import FileIOError
-    logger = get_logger(__name__)
-except ImportError:
-    logger = logging.getLogger(__name__)
+    from .logger import get_logger
+    from .exceptions import FileIOError
+except Exception:
+    try:
+        from utils.logger import get_logger
+        from utils.exceptions import FileIOError
+    except Exception:
+        get_logger = None
+        class FileIOError(Exception):
+            pass
+
+logger = get_logger(__name__) if get_logger else logging.getLogger(__name__)
+if not logger.handlers:
     logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
     logger.addHandler(handler)
@@ -23,29 +32,38 @@ except ImportError:
 def detect_encoding(file_path):
     """检测文件编码"""
     try:
-        # 尝试从core模块导入
-        from YAMLWeave.core.encoding_utils import detect_file_encoding
-        return detect_file_encoding(file_path)
-    except ImportError:
-        # 如果导入失败，使用默认UTF-8编码
-        logger.warning("无法导入编码检测模块，将使用默认UTF-8编码")
-        return 'utf-8'
+        # 优先尝试相对导入
+        from ..core.utils import detect_encoding as core_detect
+        return core_detect(file_path)
+    except Exception:
+        try:
+            from code.core.utils import detect_encoding as core_detect
+            return core_detect(file_path)
+        except Exception:
+            # 如果导入失败，使用默认UTF-8编码
+            logger.warning("无法导入编码检测模块，将使用默认UTF-8编码")
+            return 'utf-8'
 
 def read_file(file_path):
     """读取文件内容"""
     encoding = detect_encoding(file_path)
     try:
-        # 尝试从core模块导入
-        from YAMLWeave.core.file_io import read_file_lines as core_read_file_lines
-        return core_read_file_lines(file_path, encoding)
-    except ImportError:
-        # 如果导入失败，实现一个简单的读取函数
+        from ..core.utils import read_file as core_read_file
+        content = core_read_file(file_path)
+        return content.splitlines(keepends=True)
+    except Exception:
         try:
-            with open(file_path, 'r', encoding=encoding) as f:
-                return f.readlines()
-        except Exception as e:
-            logger.error(f"读取文件失败: {str(e)}")
-            return []
+            from code.core.utils import read_file as core_read_file
+            content = core_read_file(file_path)
+            return content.splitlines(keepends=True)
+        except Exception:
+            # 如果导入失败，实现一个简单的读取函数
+            try:
+                with open(file_path, 'r', encoding=encoding) as f:
+                    return f.readlines()
+            except Exception as e:
+                logger.error(f"读取文件失败: {str(e)}")
+                return []
 
 def write_file(file_path, lines, encoding: Optional[str] = None):
     """写入文件内容
@@ -58,18 +76,21 @@ def write_file(file_path, lines, encoding: Optional[str] = None):
     if encoding is None:
         encoding = detect_encoding(file_path) if os.path.exists(file_path) else 'utf-8'
     try:
-        # 尝试从core模块导入
-        from YAMLWeave.core.file_io import write_lines_to_file as core_write_lines_to_file
-        return core_write_lines_to_file(file_path, lines, encoding)
-    except ImportError:
-        # 如果导入失败，实现一个简单的写入函数
+        from ..core.utils import write_file as core_write_file
+        return core_write_file(file_path, ''.join(lines), encoding)
+    except Exception:
         try:
-            with open(file_path, 'w', encoding=encoding) as f:
-                f.writelines(lines)
-            return True
-        except Exception as e:
-            logger.error(f"写入文件失败: {str(e)}")
-            return False
+            from code.core.utils import write_file as core_write_file
+            return core_write_file(file_path, ''.join(lines), encoding)
+        except Exception:
+            # 如果导入失败，实现一个简单的写入函数
+            try:
+                with open(file_path, 'w', encoding=encoding) as f:
+                    f.writelines(lines)
+                return True
+            except Exception as e:
+                logger.error(f"写入文件失败: {str(e)}")
+                return False
 
 def get_encoding(file_path: str) -> str:
     """
