@@ -101,7 +101,7 @@ def create_spec_file(version):
 import sys
 import os
 
-PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+PROJECT_ROOT = r"{PROJECT_DIR}"
 CODE_DIR = os.path.join(PROJECT_ROOT, 'code')
 sys.path.insert(0, PROJECT_ROOT)
 sys.path.insert(0, CODE_DIR)
@@ -120,7 +120,7 @@ a = Analysis(
         (os.path.join(PROJECT_ROOT, '__init__.py'), '__init__.py'),
         (os.path.join(CODE_DIR, '__init__.py'), 'code/__init__.py'),
     ],
-hiddenimports = [
+    hiddenimports=[
     # ── 应用自身 ───────────────────────────────────────────────
     'code', 'code.ui', 'code.ui.app_ui', 'code.ui.app_controller',
     'code.core', 'code.core.stub_processor', 'code.core.stub_parser', 'code.core.utils',
@@ -132,8 +132,6 @@ hiddenimports = [
     'tkinter', 'tkinter.filedialog', 'tkinter.messagebox',
     'tkinter.ttk', 'tkinter.scrolledtext', 'tkinter.font',
     'pathlib', 'datetime',
-]
-
     ],
     hookspath=[],
     hooksconfig={{}},
