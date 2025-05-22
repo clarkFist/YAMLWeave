@@ -98,40 +98,52 @@ def create_spec_file(version):
     
     # 使用简单的相对路径，避免转义问题
     spec_content = f"""# -*- mode: python ; coding: utf-8 -*-
+import sys
+import os
+
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+CODE_DIR = os.path.join(PROJECT_ROOT, 'code')
+sys.path.insert(0, PROJECT_ROOT)
+sys.path.insert(0, CODE_DIR)
 
 block_cipher = None
 
 a = Analysis(
     ['{MAIN_SCRIPT}'],
-    pathex=['.'],
+    pathex=[PROJECT_ROOT, CODE_DIR],
     binaries=[],
     datas=[
-        ('ui', 'code/ui'),
-        ('core', 'code/core'),
-        ('utils', 'code/utils'),
-        ('handlers', 'code/handlers'),
-        ('__init__.py', 'code/__init__.py'),
+        (os.path.join(CODE_DIR, 'ui'), 'code/ui'),
+        (os.path.join(CODE_DIR, 'core'), 'code/core'),
+        (os.path.join(CODE_DIR, 'utils'), 'code/utils'),
+        (os.path.join(CODE_DIR, 'handlers'), 'code/handlers'),
+        (os.path.join(PROJECT_ROOT, '__init__.py'), '__init__.py'),
+        (os.path.join(CODE_DIR, '__init__.py'), 'code/__init__.py'),
     ],
-    hiddenimports=[
-        'yaml',
-        'tkinter',
-        'tkinter.filedialog',
-        'tkinter.messagebox',
-        'tkinter.ttk',
-        'tkinter.scrolledtext',
-        'tkinter.font',
+hiddenimports = [
+    # ── 应用自身 ───────────────────────────────────────────────
+    'code', 'code.ui', 'code.ui.app_ui', 'code.ui.app_controller',
+    'code.core', 'code.core.stub_processor', 'code.core.stub_parser', 'code.core.utils',
+    'code.utils', 'code.utils.logger', 'code.utils.exceptions',
+    'code.handlers', 'code.handlers.comment_handler', 'code.handlers.yaml_handler',
+
+    # ── 第三方 / 标准库 ───────────────────────────────────────
+    'yaml',
+    'tkinter', 'tkinter.filedialog', 'tkinter.messagebox',
+    'tkinter.ttk', 'tkinter.scrolledtext', 'tkinter.font',
+    'pathlib', 'datetime',
+]
+
     ],
     hookspath=[],
     hooksconfig={{}},
     runtime_hooks=[],
     excludes=[],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
     noarchive=False,
+    optimize=0,
 )
 
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+pyz = PYZ(a.pure)
 
 exe = EXE(
     pyz,
@@ -155,7 +167,6 @@ exe = EXE(
 coll = COLLECT(
     exe,
     a.binaries,
-    a.zipfiles,
     a.datas,
     strip=False,
     upx=True,
