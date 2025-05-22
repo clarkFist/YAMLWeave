@@ -11,6 +11,7 @@
 import re
 import os
 import logging
+import importlib
 from typing import List, Dict, Any, Optional, Tuple
 
 # 导入日志工具
@@ -60,6 +61,7 @@ if not YamlStubHandler:
     except Exception as e:
         logger.error("无法导入YamlStubHandler，锚点与桩代码分离功能将不可用")
         logger.error(f"详细错误: {e}")
+
 
 # 导入文件处理工具函数
 try:
