@@ -33,29 +33,34 @@ if not logger.hasHandlers():
     logger.addHandler(handler)
 
 # 导入YAML处理器
-
-# 在不同运行环境(如 PyInstaller 打包后)中模块路径可能变化，
-# 因此这里遍历多种可能的导入路径。
+# 尝试多个可能的模块路径，提高在不同打包方式下的兼容性
 YamlStubHandler = None
-_candidate_modules = [
+import importlib
+
+candidate_modules = [
     "code.handlers.yaml_handler",
     "handlers.yaml_handler",
-    "yamlweave.handlers.yaml_handler",
-    "yamlweave.code.handlers.yaml_handler",
     "YAMLWeave.handlers.yaml_handler",
-    "YAMLWeave.code.handlers.yaml_handler",
 ]
-for _mod in _candidate_modules:
-    try:
-        module = importlib.import_module(_mod)  # type: ignore
-        YamlStubHandler = getattr(module, "YamlStubHandler")
-        logger.info(f"成功通过 {_mod} 导入YamlStubHandler")
-        break
-    except Exception as err:
-        logger.debug(f"通过 {_mod} 导入YamlStubHandler 失败: {err}")
-if YamlStubHandler is None:
-    logger.error("无法导入YamlStubHandler，锚点与桩代码分离功能将不可用")
 
+for mod_name in candidate_modules:
+    try:
+        module = importlib.import_module(mod_name)
+        YamlStubHandler = getattr(module, "YamlStubHandler", None)
+        if YamlStubHandler:
+            logger.info(f"成功从 {mod_name} 导入YamlStubHandler")
+            break
+    except Exception as e:
+        logger.warning(f"从 {mod_name} 导入YamlStubHandler失败: {e}")
+
+if not YamlStubHandler:
+    try:
+        # 最后尝试从已加载的StubProcessor中获取
+        from code.core.stub_processor import YamlStubHandler  # type: ignore
+        logger.info("从StubProcessor导入YamlStubHandler")
+    except Exception as e:
+        logger.error("无法导入YamlStubHandler，锚点与桩代码分离功能将不可用")
+        logger.error(f"详细错误: {e}")
 
 
 # 导入文件处理工具函数
