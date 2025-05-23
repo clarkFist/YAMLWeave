@@ -29,8 +29,15 @@ if not logger.hasHandlers():
     logger.addHandler(handler)
     logger.warning("使用基本日志配置")
 
-def detect_encoding(file_path):
-    """检测文件编码"""
+def detect_encoding(file_path: str) -> str:
+    """检测文件编码
+
+    Args:
+        file_path: 要检测的文件路径
+
+    Returns:
+        str: 检测到的编码名称，默认返回 ``'utf-8'``
+    """
     try:
         # 优先尝试相对导入
         from ..core.utils import detect_encoding as core_detect
@@ -44,8 +51,15 @@ def detect_encoding(file_path):
             logger.warning("无法导入编码检测模块，将使用默认UTF-8编码")
             return 'utf-8'
 
-def read_file(file_path):
-    """读取文件内容"""
+def read_file(file_path: str) -> List[str]:
+    """读取文件内容并按行返回
+
+    Args:
+        file_path: 文件路径
+
+    Returns:
+        List[str]: 文件的行内容列表
+    """
     encoding = detect_encoding(file_path)
     try:
         from ..core.utils import read_file as core_read_file
@@ -65,13 +79,15 @@ def read_file(file_path):
                 logger.error(f"读取文件失败: {str(e)}")
                 return []
 
-def write_file(file_path, lines, encoding: Optional[str] = None):
+def write_file(file_path: str, lines: List[str], encoding: Optional[str] = None) -> bool:
     """写入文件内容
 
     Args:
         file_path: 文件路径
         lines: 要写入的内容列表
         encoding: 指定编码；为 ``None`` 时自动检测原文件编码
+    Returns:
+        bool: 写入是否成功
     """
     if encoding is None:
         encoding = detect_encoding(file_path) if os.path.exists(file_path) else 'utf-8'
@@ -158,3 +174,4 @@ def write_lines_to_file(file_path: str, lines: List[str], encoding: str = 'utf-8
     Returns:
         bool: 是否写入成功
     """
+    return write_file(file_path, lines, encoding)
