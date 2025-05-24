@@ -199,8 +199,13 @@ class StubParser:
         logger.info(f"YAML配置中存在的测试用例: {test_cases}")
         
         stub_points = []
-        
+
         # 首先在文件中查找锚点
+        # -------------------------------------------------------------
+        # 逐行扫描源文件，查找形如 ``// TC001 STEP1 segment1`` 的锚点。
+        # 每当找到一个锚点时，从 YAML 配置中获取对应的桩代码，然后记录
+        # 需要插入的行号和代码内容。
+        # -------------------------------------------------------------
         found_anchors = False
         for i, line in enumerate(lines):
             match = self.anchor_pattern.search(line)
@@ -208,42 +213,50 @@ class StubParser:
                 found_anchors = True
                 anchor_text = match.group(1).strip()
                 logger.info(f"在文件 {file_path} 的第 {i+1} 行找到锚点: {anchor_text}")
-                
+
                 # 解析锚点标识
                 try:
                     parts = anchor_text.split()
-                    # 仅获取前三个部分作为TC_ID, STEP_ID和segment_ID，不管中间有多少空格
+                    # 仅获取前三个部分作为 TC_ID、STEP_ID 和 segment_ID
                     tc_parts = []
                     for part in parts:
-                        if part.strip():  # 确保不是空字符串
+                        if part.strip():  # 过滤空字符串
                             tc_parts.append(part.strip())
-                    
-                    logger.debug(f"锚点解析结果: 原始文本='{anchor_text}', 解析部分={tc_parts}")
-                    
-                    # 确保至少有三个部分
+
+                    logger.debug(
+                        f"锚点解析结果: 原始文本='{anchor_text}', 解析部分={tc_parts}"
+                    )
+
+                    # 确保至少有三个部分: TC_ID、STEP_ID、segment_ID
                     if len(tc_parts) >= 3:
                         tc_id = tc_parts[0]
                         step_id = tc_parts[1]
                         segment_id = tc_parts[2]
-                        
-                        # 从YAML配置中获取对应的桩代码
-                        code = self.yaml_handler.get_stub_code(tc_id, step_id, segment_id)
-                        
+
+                        # 从 YAML 配置中获取对应的桩代码
+                        code = self.yaml_handler.get_stub_code(
+                            tc_id, step_id, segment_id
+                        )
+
                         if code:
                             logger.info(f"为锚点 {anchor_text} 找到桩代码")
                             # 添加到桩点列表，在锚点所在行的下一行插入
-                            stub_points.append({
-                                'test_case_id': anchor_text,
-                                'code': code,
-                                'line_number': i + 1,  # 在当前锚点行之后插入
-                                'original_line': i,
-                                'file': file_path,
-                                'format': 'new'  # 标记为新格式
-                            })
+                            stub_points.append(
+                                {
+                                    'test_case_id': anchor_text,
+                                    'code': code,
+                                    'line_number': i + 1,  # 在当前锚点行之后插入
+                                    'original_line': i,
+                                    'file': file_path,
+                                    'format': 'new',  # 标记为新格式
+                                }
+                            )
                         else:
                             logger.warning(f"未找到锚点 {anchor_text} 对应的桩代码")
                     else:
-                        logger.warning(f"锚点 '{anchor_text}' 格式不正确, 无法解析出三个部分 (TC_ID, STEP_ID, segment_ID)")
+                        logger.warning(
+                            f"锚点 '{anchor_text}' 格式不正确, 无法解析出三个部分 (TC_ID, STEP_ID, segment_ID)"
+                        )
                 except Exception as e:
                     logger.error(f"解析锚点时发生错误: {anchor_text}, 错误: {e}")
         
