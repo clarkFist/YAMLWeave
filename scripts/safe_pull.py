@@ -18,9 +18,18 @@ def safe_pull():
 
     for attempt in range(1, MAX_ATTEMPTS + 1):
         try:
-            print(f"Attempt {attempt} to fetch and reset...")
+            print(f"Attempt {attempt} to clean, fetch and reset...")
+            # Discard any local changes to ensure a clean state
+            subprocess.run(["git", "reset", "--hard"], check=True)
+            subprocess.run(["git", "clean", "-fd"], check=True)
+
             subprocess.run(["git", "fetch", "--all"], check=True)
-            subprocess.run(["git", "reset", "--hard", f"origin/{branch}"], check=True)
+            subprocess.run([
+                "git",
+                "reset",
+                "--hard",
+                f"origin/{branch}",
+            ], check=True)
             print("Pull successful.")
             return
         except subprocess.CalledProcessError as exc:
