@@ -99,6 +99,7 @@ def create_spec_file(version):
     spec_file_path = os.path.join(SCRIPT_DIR, f"{APP_NAME}_{version}.spec")
     
     # 使用简单的相对路径，避免转义问题
+    main_script_posix = Path(MAIN_SCRIPT_PATH).as_posix()
     spec_content = f"""# -*- mode: python ; coding: utf-8 -*-
 import sys
 import os
@@ -111,7 +112,7 @@ sys.path.insert(0, CODE_DIR)
 block_cipher = None
 
 a = Analysis(
-    ['{MAIN_SCRIPT_PATH}'],
+    ['{main_script_posix}'],
     pathex=[PROJECT_ROOT, CODE_DIR],
     binaries=[],
     datas=[
