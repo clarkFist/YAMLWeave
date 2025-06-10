@@ -111,7 +111,7 @@ sys.path.insert(0, CODE_DIR)
 block_cipher = None
 
 a = Analysis(
-    ['{MAIN_SCRIPT_PATH}'],
+    [r"{MAIN_SCRIPT_PATH}"],
     pathex=[PROJECT_ROOT, CODE_DIR],
     binaries=[],
     datas=[
