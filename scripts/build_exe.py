@@ -23,6 +23,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(SCRIPT_DIR)  # 仓库根目录
 CODE_DIR = os.path.join(PROJECT_DIR, "code")  # 原code目录位置
 MAIN_SCRIPT_PATH = os.path.join(CODE_DIR, MAIN_SCRIPT)
+RUNTIME_HOOK = os.path.join(SCRIPT_DIR, "tkinter_env_hook.py")
 
 # 日志配置
 LOG_FILE = os.path.join(SCRIPT_DIR, f"packing_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
@@ -167,7 +168,7 @@ a = Analysis(
     ],
     hookspath=[],
     hooksconfig={{}},
-    runtime_hooks=[],
+    runtime_hooks=[r'{RUNTIME_HOOK}'],
     excludes=[],
     noarchive=False,
     optimize=0,
