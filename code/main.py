@@ -1783,5 +1783,11 @@ def main():
 
 
 if __name__ == "__main__":
-
-    main() 
+    try:
+        main()
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        if getattr(sys, 'frozen', False):
+            input("程序发生异常，按回车退出...")
+        sys.exit(1)
