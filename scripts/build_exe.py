@@ -263,6 +263,22 @@ def cleanup():
         logger.error(f"清理临时文件失败: {e}")
         return False
 
+def open_output_dir(version):
+    """在打包完成后打开输出目录"""
+    output_dir = os.path.join(PROJECT_DIR, f"{APP_NAME}_{version}")
+    logger.info(f"尝试打开目录: {output_dir}")
+    try:
+        if platform.system() == "Windows":
+            os.startfile(output_dir)
+        elif platform.system() == "Darwin":
+            subprocess.Popen(["open", output_dir])
+        else:
+            subprocess.Popen(["xdg-open", output_dir])
+        return True
+    except Exception as e:
+        logger.error(f"自动打开目录失败: {e}")
+        return False
+
 def validate_key_files():
     """验证关键Python文件的语法正确性"""
     logger.info("验证关键文件语法...")
@@ -345,7 +361,11 @@ def main():
         cleanup()
         
         logger.info(f"{APP_NAME} {version} 打包完成!")
-        logger.info(f"打包结果位于: {os.path.join(PROJECT_DIR, f'{APP_NAME}_{version}')}")
+        output_dir = os.path.join(PROJECT_DIR, f"{APP_NAME}_{version}")
+        logger.info(f"打包结果位于: {output_dir}")
+
+        # 打开输出目录以便用户查看生成的程序
+        open_output_dir(version)
         
     except Exception as e:
         logger.error(f"打包过程中发生错误: {e}", exc_info=True)
