@@ -77,30 +77,13 @@ import tempfile
 import uuid
 import datetime
 import shutil
-from utils.logger import setup_global_logger
 import glob
-
-setup_global_logger()
-
-def safe_ui_log(ui, message, tag=None):
-    """Safely call ui.log with optional tag support."""
-    if not ui or not hasattr(ui, "log"):
-        return
-    try:
-        import inspect
-        sig = inspect.signature(ui.log)
-        if tag is not None and "tag" in sig.parameters:
-            ui.log(message, tag=tag)
-        else:
-            ui.log(message)
-    except Exception as e:
-        logging.getLogger(__name__).error(f"UI log failed: {e}")
 
 # 获取应用根目录的函数
 def get_application_root():
     """
     获取应用程序根目录，支持普通运行和PyInstaller打包后的场景
-    
+
     返回:
         str: 应用程序根目录的绝对路径
     """
@@ -108,7 +91,7 @@ def get_application_root():
     if hasattr(sys, '_MEIPASS'):
         # PyInstaller打包后的路径
         return sys._MEIPASS
-    
+
     # 普通Python运行 - 获取当前文件所在目录的父目录（项目根目录）
     current_file = os.path.abspath(inspect.getfile(inspect.currentframe()))
     code_dir = os.path.dirname(current_file)
@@ -126,18 +109,36 @@ def setup_import_paths():
     # 将项目根目录添加到Python路径
     if APP_ROOT not in sys.path:
         sys.path.insert(0, APP_ROOT)
-    
+
     # 将code目录添加到Python路径（如果存在）
     code_dir = os.path.join(APP_ROOT, "code")
     if os.path.isdir(code_dir) and code_dir not in sys.path:
         sys.path.insert(0, code_dir)
-    
+
     # 打印当前应用根目录和sys.path (调试用)
     print(f"应用根目录: {APP_ROOT}")
     print(f"sys.path: {sys.path}")
 
-# 设置导入路径
+# 设置导入路径，确保后续导入的模块可用
 setup_import_paths()
+
+from utils.logger import setup_global_logger
+
+setup_global_logger()
+
+def safe_ui_log(ui, message, tag=None):
+    """Safely call ui.log with optional tag support."""
+    if not ui or not hasattr(ui, "log"):
+        return
+    try:
+        import inspect
+        sig = inspect.signature(ui.log)
+        if tag is not None and "tag" in sig.parameters:
+            ui.log(message, tag=tag)
+        else:
+            ui.log(message)
+    except Exception as e:
+        logging.getLogger(__name__).error(f"UI log failed: {e}")
 
 # 配置日志记录器
 def setup_logger():
