@@ -1791,3 +1791,6 @@ if __name__ == "__main__":
         if getattr(sys, 'frozen', False):
             input("程序发生异常，按回车退出...")
         sys.exit(1)
+    else:
+        if getattr(sys, 'frozen', False):
+            input("程序执行完毕，按回车退出...")
