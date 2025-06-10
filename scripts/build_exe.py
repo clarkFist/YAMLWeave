@@ -47,13 +47,25 @@ def check_requirements():
     except ImportError:
         logger.info("安装PyInstaller...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller"])
-    
+
     try:
         import yaml
         logger.info("PyYAML已安装")
     except ImportError:
         logger.info("安装PyYAML...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", "pyyaml"])
+
+    # 检查 tkinter 是否可用
+    try:
+        import tkinter  # noqa: F401
+        logger.info("Tkinter 已安装")
+    except Exception as e:  # pylint: disable=broad-except
+        logger.error("Tkinter 无法导入: %s", e)
+        logger.error(
+            "请确认 Python 已包含 Tcl/Tk 组件。\n"
+            "在 Windows 上可重新安装官方发行版，勾选 Tcl/Tk；"
+            "在 Linux 上可安装 python3-tk 软件包。"
+        )
 
 def clean_old_files():
     """清理旧的打包文件和目录"""
