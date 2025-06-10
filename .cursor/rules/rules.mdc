@@ -26,7 +26,7 @@ alwaysApply: true
 - 其它关键文件  
   - `code/main.py`：程序入口，可启动 GUI 或生成示例。  
   - `code/cli/main.py`：命令行接口。  
-  - `code/pack.py`：PyInstaller 打包脚本。  
+  - `scripts/build_exe.py`：PyInstaller 打包脚本。
 - 文档  
   - `readme.md`、`cursorrules.md`、`YamlWeave项目架构设计文档.md`：功能、流程及设计说明。
 
@@ -66,7 +66,7 @@ alwaysApply: true
   - 交互层（GUI/CLI）位于 `code/ui/` 或 `code/cli/`。
 - 日志统一通过 `code/utils/logger.py` 配置，如需在 UI 中显示日志，使用 `UILogger`。
 - 修改或新增代码时注意兼容两种模式（传统与分离），保持备份与结果目录逻辑不变。
-- 打包流程通过 `code/pack.py` 调用 PyInstaller；如需扩展，请更新 spec 文件并保持可执行路径正确。
+- 打包流程通过 `scripts/build_exe.py` 调用 PyInstaller；如需扩展，请更新 spec 文件并保持可执行路径正确。
 
  
 

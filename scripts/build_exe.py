@@ -20,7 +20,9 @@ MAIN_SCRIPT = "main.py"
 
 # 获取项目路径
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.dirname(SCRIPT_DIR)  # code的上一级目录
+PROJECT_DIR = os.path.dirname(SCRIPT_DIR)  # 仓库根目录
+CODE_DIR = os.path.join(PROJECT_DIR, "code")  # 原code目录位置
+MAIN_SCRIPT_PATH = os.path.join(CODE_DIR, MAIN_SCRIPT)
 
 # 日志配置
 LOG_FILE = os.path.join(SCRIPT_DIR, f"packing_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
@@ -97,6 +99,7 @@ def create_spec_file(version):
     spec_file_path = os.path.join(SCRIPT_DIR, f"{APP_NAME}_{version}.spec")
     
     # 使用简单的相对路径，避免转义问题
+    main_script_posix = Path(MAIN_SCRIPT_PATH).as_posix()
     spec_content = f"""# -*- mode: python ; coding: utf-8 -*-
 import sys
 import os
@@ -109,7 +112,7 @@ sys.path.insert(0, CODE_DIR)
 block_cipher = None
 
 a = Analysis(
-    ['{MAIN_SCRIPT}'],
+    ['{main_script_posix}'],
     pathex=[PROJECT_ROOT, CODE_DIR],
     binaries=[],
     datas=[
@@ -265,19 +268,19 @@ def validate_key_files():
     """验证关键Python文件的语法正确性"""
     logger.info("验证关键文件语法...")
     key_files = [
-        os.path.join(SCRIPT_DIR, "main.py"),
-        os.path.join(SCRIPT_DIR, "stub_processor.py"),
+        os.path.join(CODE_DIR, "main.py"),
+        os.path.join(CODE_DIR, "stub_processor.py"),
     ]
-    
+
     # 检查core目录中的文件
-    core_dir = os.path.join(SCRIPT_DIR, "core")
+    core_dir = os.path.join(CODE_DIR, "core")
     if os.path.exists(core_dir):
         for file in os.listdir(core_dir):
             if file.endswith(".py"):
                 key_files.append(os.path.join(core_dir, file))
     
     # 检查handlers目录中的文件
-    handlers_dir = os.path.join(SCRIPT_DIR, "handlers")
+    handlers_dir = os.path.join(CODE_DIR, "handlers")
     if os.path.exists(handlers_dir):
         for file in os.listdir(handlers_dir):
             if file.endswith(".py"):
