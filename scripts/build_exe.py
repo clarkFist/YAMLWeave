@@ -38,6 +38,19 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+def get_tcl_tk_paths():
+    """尝试获取 Tcl/Tk 资源目录路径"""
+    try:
+        import tkinter
+        tcl_lib = Path(tkinter.Tcl().eval('info library'))
+        tk_ver = '.'.join(tkinter.Tcl().eval('info patchlevel').split('.')[:2])
+        tk_lib = tcl_lib.parent / f"tk{tk_ver}"
+        return str(tcl_lib), str(tk_lib)
+    except Exception as exc:  # pylint: disable=broad-except
+        logger.warning("无法获取 Tcl/Tk 路径: %s", exc)
+        return None, None
+
 def check_requirements():
     """检查并安装必要的依赖"""
     logger.info("检查必要的依赖...")
@@ -110,6 +123,11 @@ def create_spec_file(version):
     output_name = f"{APP_NAME}_{version}"
     spec_file_path = os.path.join(SCRIPT_DIR, f"{APP_NAME}_{version}.spec")
     
+    # 获取 Tcl/Tk 路径
+    tcl_path, tk_path = get_tcl_tk_paths()
+    tcl_data = f"        (r'{tcl_path}', 'tcl'),\n" if tcl_path else ""
+    tk_data = f"        (r'{tk_path}', 'tk'),\n" if tk_path else ""
+
     # 使用简单的相对路径，避免转义问题
     spec_content = f"""# -*- mode: python ; coding: utf-8 -*-
 import sys
@@ -133,7 +151,7 @@ a = Analysis(
         (os.path.join(CODE_DIR, 'handlers'), 'code/handlers'),
         (os.path.join(PROJECT_ROOT, '__init__.py'), '__init__.py'),
         (os.path.join(CODE_DIR, '__init__.py'), 'code/__init__.py'),
-    ],
+{tcl_data}{tk_data}    ],
     hiddenimports=[
     # ── 应用自身 ───────────────────────────────────────────────
     'code', 'code.ui', 'code.ui.app_ui', 'code.ui.app_controller',
@@ -200,14 +218,21 @@ def run_pyinstaller(spec_file):
     
     try:
         # 直接执行PyInstaller打包
+        env = os.environ.copy()
+        tcl_path, tk_path = get_tcl_tk_paths()
+        if tcl_path:
+            env['TCL_LIBRARY'] = tcl_path
+        if tk_path:
+            env['TK_LIBRARY'] = tk_path
+
         subprocess.check_call([
-            sys.executable, 
-            "-m", 
-            "PyInstaller", 
+            sys.executable,
+            "-m",
+            "PyInstaller",
             spec_file,
             "--clean",
             "--noconfirm"
-        ], cwd=SCRIPT_DIR)
+        ], cwd=SCRIPT_DIR, env=env)
         logger.info("PyInstaller打包成功")
         return True
     except subprocess.CalledProcessError as e:
