@@ -247,7 +247,6 @@ A: 该错误通常是 Python 缺少 Tcl/Tk 组件导致。请确认所用的 Pyt
 ```
 YAMLWeave_v1.0.0_20250514/
 ├── YAMLWeave_v1.0.0_20250514.exe  # 主程序可执行文件
-├── version.txt                    # 版本信息文件
 ├── readme.md                      # 使用说明文档
 ├── logs/                          # 日志目录
 └── _internal/                     # 程序依赖目录
