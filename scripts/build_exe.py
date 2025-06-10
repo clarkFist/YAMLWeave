@@ -11,6 +11,7 @@ import datetime
 import shutil
 import logging
 import platform
+import glob
 from pathlib import Path
 
 # 基础配置
@@ -47,10 +48,50 @@ def get_tcl_tk_paths():
         tcl_lib = Path(tkinter.Tcl().eval('info library'))
         tk_ver = '.'.join(tkinter.Tcl().eval('info patchlevel').split('.')[:2])
         tk_lib = tcl_lib.parent / f"tk{tk_ver}"
-        return str(tcl_lib), str(tk_lib)
+        
+        # 对于 Anaconda 环境，还需要获取 DLL 目录
+        python_exe = Path(sys.executable)
+        
+        # 检查是否是 Anaconda 环境
+        if 'anaconda' in str(python_exe).lower() or 'miniconda' in str(python_exe).lower():
+            # Anaconda 环境中的 DLL 路径
+            dll_dir = python_exe.parent / 'Library' / 'bin'
+            logger.info(f"检测到 Anaconda 环境，DLL 目录: {dll_dir}")
+        else:
+            # 标准 Python 安装的 DLL 路径
+            dll_dir = python_exe.parent / 'DLLs'
+            
+        return str(tcl_lib), str(tk_lib), str(dll_dir)
     except Exception as exc:  # pylint: disable=broad-except
         logger.warning("无法获取 Tcl/Tk 路径: %s", exc)
-        return None, None
+        return None, None, None
+
+def get_tkinter_binaries():
+    """获取 tkinter 相关的二进制文件"""
+    binaries = []
+    try:
+        _, _, dll_dir = get_tcl_tk_paths()
+        if dll_dir and os.path.exists(dll_dir):
+            # 查找所有 Tcl/Tk 相关的 DLL 文件
+            dll_patterns = ['tcl*.dll', 'tk*.dll', '_tkinter*.pyd', 'tkinter*.dll']
+            for pattern in dll_patterns:
+                for dll_file in glob.glob(os.path.join(dll_dir, pattern)):
+                    if os.path.isfile(dll_file):
+                        binaries.append((dll_file, '.'))
+                        logger.info(f"添加 DLL 文件: {dll_file}")
+            
+            # 检查 Python DLLs 目录
+            python_exe = Path(sys.executable)
+            python_dll_dir = python_exe.parent / 'DLLs'
+            if python_dll_dir.exists():
+                for dll_file in python_dll_dir.glob('_tkinter*.pyd'):
+                    binaries.append((str(dll_file), '.'))
+                    logger.info(f"添加 Python DLL: {dll_file}")
+                    
+        return binaries
+    except Exception as exc:
+        logger.warning("获取 tkinter 二进制文件失败: %s", exc)
+        return []
 
 def check_requirements():
     """检查并安装必要的依赖"""
@@ -125,9 +166,16 @@ def create_spec_file(version):
     spec_file_path = os.path.join(SCRIPT_DIR, f"{APP_NAME}_{version}.spec")
     
     # 获取 Tcl/Tk 路径
-    tcl_path, tk_path = get_tcl_tk_paths()
+    tcl_path, tk_path, dll_dir = get_tcl_tk_paths()
     tcl_data = f"        (r'{tcl_path}', 'tcl'),\n" if tcl_path else ""
     tk_data = f"        (r'{tk_path}', 'tk'),\n" if tk_path else ""
+    
+    # 获取 tkinter 相关的二进制文件
+    tkinter_binaries = get_tkinter_binaries()
+    binaries_str = ""
+    if tkinter_binaries:
+        for binary_file, dest in tkinter_binaries:
+            binaries_str += f"        (r'{binary_file}', '{dest}'),\n"
 
     # 使用简单的相对路径，避免转义问题
     spec_content = f"""# -*- mode: python ; coding: utf-8 -*-
@@ -144,7 +192,8 @@ block_cipher = None
 a = Analysis(
     [r"{MAIN_SCRIPT_PATH}"],
     pathex=[PROJECT_ROOT, CODE_DIR],
-    binaries=[],
+    binaries=[
+{binaries_str}    ],
     datas=[
         (os.path.join(CODE_DIR, 'ui'), 'code/ui'),
         (os.path.join(CODE_DIR, 'core'), 'code/core'),
@@ -220,7 +269,7 @@ def run_pyinstaller(spec_file):
     try:
         # 直接执行PyInstaller打包
         env = os.environ.copy()
-        tcl_path, tk_path = get_tcl_tk_paths()
+        tcl_path, tk_path, dll_dir = get_tcl_tk_paths()
         if tcl_path:
             env['TCL_LIBRARY'] = tcl_path
         if tk_path:

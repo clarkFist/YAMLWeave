@@ -1788,9 +1788,17 @@ if __name__ == "__main__":
     except Exception as exc:
         import traceback
         traceback.print_exc()
-        if getattr(sys, 'frozen', False):
-            input("程序发生异常，按回车退出...")
+        if getattr(sys, 'frozen', False) and hasattr(sys, 'stdin') and sys.stdin:
+            try:
+                input("程序发生异常，按回车退出...")
+            except (RuntimeError, OSError):
+                # 在无控制台窗口的情况下忽略输入错误
+                pass
         sys.exit(1)
     else:
-        if getattr(sys, 'frozen', False):
-            input("程序执行完毕，按回车退出...")
+        if getattr(sys, 'frozen', False) and hasattr(sys, 'stdin') and sys.stdin:
+            try:
+                input("程序执行完毕，按回车退出...")
+            except (RuntimeError, OSError):
+                # 在无控制台窗口的情况下忽略输入错误
+                pass
