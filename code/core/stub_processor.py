@@ -579,7 +579,7 @@ class StubProcessor:
             def literal_representer(dumper, data):
                 return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
 
-            yaml.add_representer(LiteralStr, literal_representer)
+            yaml.add_representer(LiteralStr, literal_representer, Dumper=yaml.SafeDumper)
 
             # 将代码段包装为LiteralStr，确保YAML使用|块格式
             formatted_dict: Dict[str, Dict[str, Dict[str, LiteralStr]]] = {}
