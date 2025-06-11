@@ -128,6 +128,9 @@ class StubParser:
         
         # YAML处理器
         self.yaml_handler = yaml_handler
+
+        # 用于统计缺失的桩代码锚点
+        self.missing_anchors: List[Dict[str, Any]] = []
     
     def set_yaml_handler(self, yaml_handler: YamlStubHandler):
         """
@@ -253,6 +256,7 @@ class StubParser:
                             )
                         else:
                             logger.warning(f"未找到锚点 {anchor_text} 对应的桩代码")
+                            self.missing_anchors.append({'file': file_path, 'line': i + 1, 'anchor': anchor_text})
                     else:
                         logger.warning(
                             f"锚点 '{anchor_text}' 格式不正确, 无法解析出三个部分 (TC_ID, STEP_ID, segment_ID)"
