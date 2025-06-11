@@ -503,6 +503,39 @@ class StubProcessor:
                                 self.ui.log(f"[文件] └─ ...还有{len(details)-3}个锚点未显示...", tag="info")
                         if len(self.anchor_details) > 10:
                             self.ui.log(f"[信息] ...还有{len(self.anchor_details)-10}个文件未显示...", tag="info")
+
+                        # 统计缺失桩代码的锚点
+                        missing = []
+                        for fp, info_list in self.anchor_details.items():
+                            for a in info_list:
+                                if not a.get('success'):
+                                    missing.append((fp, a))
+
+                        missing_count = len(missing)
+                        if missing_count > 0:
+                            self.ui.log(f"[警告] 缺失桩代码锚点共 {missing_count} 个:", tag="warning")
+                            for fp, a in missing[:10]:
+                                fname = os.path.basename(fp)
+                                self.ui.log(
+                                    f"└─ {fname} 第{a.get('line', 0)}行: {a.get('tc_id', '未知')} {a.get('step_id', '未知')} {a.get('segment_id', '未知')}",
+                                    tag="warning",
+                                )
+                            if missing_count > 10:
+                                self.ui.log(f"...还有{missing_count-10}个未显示...", tag="info")
+
+                            # 在状态栏提示缺失数量
+                            if hasattr(self.ui, 'update_status'):
+                                self.ui.update_status(f"缺失桩代码 {missing_count} 个")
+
+                            # 弹窗提示用户检查YAML配置
+                            try:
+                                from tkinter import messagebox
+                                messagebox.showwarning(
+                                    "缺失桩代码",
+                                    f"共有 {missing_count} 个锚点缺少桩代码，请检查YAML配置文件。",
+                                )
+                            except Exception as e:
+                                logger.warning(f"无法显示缺失提示弹窗: {str(e)}")
                     else:
                         self.ui.log("[信息] 未找到有效锚点", tag="warning")
                     
