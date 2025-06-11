@@ -125,7 +125,7 @@ class StubProcessorAdapter:
                 self.logger.warning(f"处理器不支持yaml_file设置，可能需要更新或添加此功能")
         except Exception as e:
             self.logger.error(f"设置YAML文件时出错: {str(e)}")
-    
+
     def process_directory(self, root_dir):
         """
         处理目录 - 兼容接口
@@ -320,6 +320,21 @@ class StubProcessorAdapter:
                 "successful_stubs": 0,
                 "errors": [{"file": "异常", "error": str(e)}]
             }
+
+    def extract_to_yaml(self, root_dir, output_file):
+        """兼容导出YAML配置"""
+        try:
+            if hasattr(self.processor, "extract_to_yaml"):
+                return self.processor.extract_to_yaml(root_dir, output_file)
+
+            # 使用核心实现作为后备方案
+            from code.core.stub_processor import StubProcessor as CoreStubProcessor
+            core_proc = CoreStubProcessor(project_dir=root_dir)
+            return core_proc.extract_to_yaml(root_dir, output_file)
+        except Exception as e:
+            self.logger.error(f"兼容导出YAML失败: {str(e)}")
+            self.logger.error(traceback.format_exc())
+            return False
 
 class AppController:
     """
