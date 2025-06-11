@@ -367,6 +367,7 @@ class AppController:
         if self.ui is not None:
             try:
                 self.ui.set_process_callback(self.process_directory)
+                self.ui.set_reverse_callback(self.export_yaml)
                 self.log_info("成功设置处理回调")
             except Exception as e:
                 self.log_error(f"设置UI回调失败: {str(e)}")
@@ -564,6 +565,44 @@ class AppController:
             # 更新状态
             if self.ui:
                 self.ui.update_status("处理时出错")
+
+    def export_yaml(self, root_dir, output_file):
+        """反向生成YAML配置文件"""
+        if not root_dir or not os.path.isdir(root_dir):
+            self.log_error(f"无效的目录路径: {root_dir}")
+            return
+
+        thread = threading.Thread(
+            target=self._export_yaml_thread,
+            args=(root_dir, output_file),
+        )
+        thread.daemon = True
+        thread.start()
+
+    def _export_yaml_thread(self, root_dir, output_file):
+        try:
+            self.log_info(f"开始导出YAML: {output_file}")
+            if self.processor is None:
+                self.log_error("处理器未初始化，无法导出")
+                if self.ui:
+                    self.ui.update_status("错误: 处理器未初始化")
+                return
+
+            success = self.processor.extract_to_yaml(root_dir, output_file)
+            if success:
+                if self.ui:
+                    self.ui.log(f"[成功] YAML已导出到: {os.path.basename(output_file)}", tag="success")
+                    self.ui.update_status("导出完成")
+                self.log_info("YAML导出成功")
+            else:
+                self.log_error("YAML导出失败")
+                if self.ui:
+                    self.ui.update_status("导出失败")
+        except Exception as e:
+            self.log_error(f"导出YAML出错: {str(e)}")
+            self.log_error(traceback.format_exc())
+            if self.ui:
+                self.ui.update_status("导出失败")
 
 
 # def main():
