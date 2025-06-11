@@ -572,8 +572,35 @@ class StubProcessor:
                     stub_dict.setdefault(tc, {}).setdefault(step, {})[seg] = code
 
             import yaml
+
+            class LiteralStr(str):
+                """用于在YAML中以块字符串形式表示代码"""
+
+            def literal_representer(dumper, data):
+                return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
+
+            yaml.add_representer(LiteralStr, literal_representer)
+
+            # 将代码段包装为LiteralStr，确保YAML使用|块格式
+            formatted_dict: Dict[str, Dict[str, Dict[str, LiteralStr]]] = {}
+            for tc_id, steps in stub_dict.items():
+                formatted_dict[tc_id] = {}
+                for step_id, segments in steps.items():
+                    formatted_dict[tc_id][step_id] = {
+                        seg_id: LiteralStr(code)
+                        for seg_id, code in segments.items()
+                    }
+
             with open(output_file, 'w', encoding='utf-8') as f:
-                yaml.safe_dump(stub_dict, f, allow_unicode=True, sort_keys=False)
+                yaml.safe_dump(
+                    formatted_dict,
+                    f,
+                    allow_unicode=True,
+                    sort_keys=False,
+                    default_flow_style=False,
+                    indent=2,
+                )
+
             self.logger.info(f"成功导出YAML: {output_file}")
             return True
         except Exception as e:
