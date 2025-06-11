@@ -557,6 +557,31 @@ class StubProcessor:
             self.logger.error(traceback.format_exc())
             return False, error_msg, self.stats
 
+    def extract_to_yaml(self, root_dir: str, output_file: str) -> bool:
+        """根据已插入的桩代码生成YAML配置"""
+        try:
+            stub_dict: Dict[str, Dict[str, Dict[str, str]]] = {}
+            c_files = find_c_files(root_dir)
+            for file_path in c_files:
+                stubs = self.parser.extract_stubs_from_file(file_path)
+                for entry in stubs:
+                    tc = entry['test_case_id']
+                    step = entry['step_id']
+                    seg = entry['segment_id']
+                    code = entry['code']
+                    stub_dict.setdefault(tc, {}).setdefault(step, {})[seg] = code
+
+            import yaml
+            with open(output_file, 'w', encoding='utf-8') as f:
+                yaml.safe_dump(stub_dict, f, allow_unicode=True, sort_keys=False)
+            self.logger.info(f"成功导出YAML: {output_file}")
+            return True
+        except Exception as e:
+            self.logger.error(f"导出YAML失败: {str(e)}")
+            import traceback
+            self.logger.error(traceback.format_exc())
+            return False
+
 # 辅助函数
 def find_c_files(root_dir):
     """查找目录下所有.c文件"""

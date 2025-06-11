@@ -430,4 +430,43 @@ class StubParser:
             logger.error(error_msg)
             import traceback
             logger.error(traceback.format_exc())
-            return False, error_msg, 0 
+            return False, error_msg, 0
+
+    def extract_stubs_from_file(self, file_path: str) -> List[Dict[str, str]]:
+        """从插桩后的文件中提取桩代码信息"""
+        try:
+            content, _ = read_file(file_path)
+            if content is None:
+                return []
+
+            lines = content.splitlines()
+            stubs: List[Dict[str, str]] = []
+            i = 0
+            while i < len(lines):
+                line = lines[i]
+                match = self.anchor_pattern.search(line)
+                if match:
+                    anchor_text = match.group(1).strip()
+                    parts = anchor_text.split()
+                    if len(parts) >= 3:
+                        tc_id, step_id, seg_id = parts[0], parts[1], parts[2]
+                        i += 1
+                        code_lines = []
+                        while i < len(lines) and '通过桩插入' in lines[i]:
+                            cleaned = lines[i].split('//')[0].rstrip()
+                            code_lines.append(cleaned)
+                            i += 1
+                        stubs.append({
+                            'test_case_id': tc_id,
+                            'step_id': step_id,
+                            'segment_id': seg_id,
+                            'code': '\n'.join(code_lines)
+                        })
+                    else:
+                        i += 1
+                else:
+                    i += 1
+            return stubs
+        except Exception as e:
+            logger.error(f"解析插桩文件失败: {str(e)}")
+            return []

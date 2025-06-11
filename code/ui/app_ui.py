@@ -54,6 +54,7 @@ class YAMLWeaveUI:
         
         # 回调函数
         self.process_callback = None
+        self.reverse_callback = None
         
         # 创建UI组件
         self._create_widgets()
@@ -104,6 +105,7 @@ class YAMLWeaveUI:
         ttk.Button(button_frame, text="扫描并插入", command=self._process).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="清除日志", command=self._clear_log).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="导出日志", command=self._export_log).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="反向生成YAML", command=self._reverse_extract).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="关于", command=self._show_about).pack(side=tk.LEFT, padx=5)
         
         # 日志区域
@@ -247,6 +249,34 @@ class YAMLWeaveUI:
                 self.log(f"[信息] 日志已导出到: {file_path}", tag="success")
             except Exception as e:
                 messagebox.showerror("导出错误", f"导出日志时出错: {str(e)}")
+
+    def _reverse_extract(self):
+        """反向提取YAML配置"""
+        project_dir = self.project_dir.get()
+        if not project_dir or not os.path.isdir(project_dir):
+            messagebox.showwarning("输入错误", "请选择有效项目目录")
+            return
+
+        output_path = filedialog.asksaveasfilename(
+            defaultextension=".yaml",
+            filetypes=[("YAML files", "*.yaml *.yml"), ("All files", "*.*")],
+            initialfile="reversed.yaml",
+        )
+        if not output_path:
+            return
+
+        self.update_status("开始导出YAML...")
+        self.log(f"[信息] 反向提取YAML到: {output_path}", tag="info")
+
+        if self.reverse_callback:
+            try:
+                self.reverse_callback(project_dir, output_path)
+            except Exception as e:
+                self.log(f"[错误] 导出YAML失败: {str(e)}", tag="error")
+                self.update_status("导出失败")
+        else:
+            self.log("[错误] 未设置导出回调函数", tag="error")
+            self.update_status("导出失败")
     
     def _show_about(self):
         """显示关于对话框"""
@@ -265,6 +295,10 @@ class YAMLWeaveUI:
     def set_process_callback(self, callback):
         """设置处理回调函数"""
         self.process_callback = callback
+
+    def set_reverse_callback(self, callback):
+        """设置反向导出回调函数"""
+        self.reverse_callback = callback
     
     def update_status(self, status_text):
         """更新状态栏文本"""
