@@ -483,13 +483,21 @@ class StubProcessor:
             if result["errors"]:
                 self.logger.warning(f"处理错误数: {len(result['errors'])}")
 
-            # 统计缺失的桩代码锚点
-            missing_count = len(getattr(self.parser, 'missing_anchors', []))
+            # 统计缺失的桩代码锚点，并记录详细信息
+            missing_list = getattr(self.parser, 'missing_anchors', [])
+            missing_count = len(missing_list)
             result["missing_stubs"] = missing_count
+            result["missing_anchor_details"] = missing_list
             if missing_count > 0:
                 self.logger.warning(f"缺失桩代码锚点数: {missing_count}")
                 if hasattr(self, 'ui') and self.ui:
                     self.ui.log(f"[警告] 缺失桩代码锚点共 {missing_count} 个", tag="warning")
+                    for entry in missing_list:
+                        rel_file = os.path.relpath(entry.get('file', ''), root_dir)
+                        line = entry.get('line', '')
+                        anchor = entry.get('anchor', '')
+                        msg = f"{rel_file} 第 {line} 行: {anchor} 未在YAML中找到"
+                        self.ui.log(f"[缺失] {msg}", tag="missing")
                     if hasattr(self.ui, 'update_status'):
                         self.ui.update_status(f"缺失桩代码 {missing_count} 个")
         except Exception as e:

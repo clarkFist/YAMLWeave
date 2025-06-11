@@ -138,6 +138,7 @@ class YAMLWeaveUI:
         self.log_text.tag_configure("warning", foreground="orange")
         self.log_text.tag_configure("error", foreground="red")
         self.log_text.tag_configure("success", foreground="green")
+        self.log_text.tag_configure("missing", foreground="red")
         
         # 特殊标签 - 锚点和插桩信息 - 使用更醒目的样式
         self.log_text.tag_configure("header", foreground="blue", font=("Helvetica", 10, "bold"))

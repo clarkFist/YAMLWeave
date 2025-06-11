@@ -399,6 +399,12 @@ class AppController:
         self.logger.error(message)
         if self.ui:
             self.ui.log(f"[错误] {message}")
+
+    def log_missing(self, message):
+        """记录缺失锚点信息"""
+        self.logger.warning(message)
+        if self.ui:
+            self.ui.log(f"[缺失] {message}", tag="missing")
     
     def process_directory(self, root_dir, yaml_file=None):
         """处理目录"""
@@ -464,6 +470,12 @@ class AppController:
                 missing = result.get('missing_stubs', 0)
                 if missing > 0:
                     self.log_warning(f"缺失桩代码锚点: {missing} 个")
+                    details = result.get('missing_anchor_details', [])
+                    if details:
+                        self.log_warning("以下锚点在YAML中未找到:")
+                        for entry in details:
+                            msg = f"{entry.get('file')} 第 {entry.get('line')} 行: {entry.get('anchor')}"
+                            self.log_missing(msg)
                 
                 # 显示备份和结果目录信息
                 backup_dir = result.get('backup_dir', '')
