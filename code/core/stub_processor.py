@@ -344,9 +344,10 @@ class StubProcessor:
             "successful_stubs": 0,
             "errors": [],
             "backup_dir": None,
-            "stubbed_dir": None
+            "stubbed_dir": None,
+            "missing_stubs": 0
         }
-        
+
         # 实际处理目录
         try:
             # 检查目录是否存在
@@ -366,7 +367,11 @@ class StubProcessor:
             # 将目录信息添加到结果中
             result["backup_dir"] = backup_dir
             result["stubbed_dir"] = stubbed_dir
-            
+
+            # 重置缺失桩代码统计
+            if hasattr(self, 'parser') and hasattr(self.parser, 'missing_anchors'):
+                self.parser.missing_anchors = []
+
             # 查找所有C文件
             c_files = find_c_files(root_dir)
             result["total_files"] = len(c_files)
@@ -477,6 +482,16 @@ class StubProcessor:
             self.logger.info(f"插入桩点数: {result['successful_stubs']}")
             if result["errors"]:
                 self.logger.warning(f"处理错误数: {len(result['errors'])}")
+
+            # 统计缺失的桩代码锚点
+            missing_count = len(getattr(self.parser, 'missing_anchors', []))
+            result["missing_stubs"] = missing_count
+            if missing_count > 0:
+                self.logger.warning(f"缺失桩代码锚点数: {missing_count}")
+                if hasattr(self, 'ui') and self.ui:
+                    self.ui.log(f"[警告] 缺失桩代码锚点共 {missing_count} 个", tag="warning")
+                    if hasattr(self.ui, 'update_status'):
+                        self.ui.update_status(f"缺失桩代码 {missing_count} 个")
         except Exception as e:
             error_msg = f"处理目录时出错: {str(e)}"
             self.logger.error(error_msg)
@@ -517,6 +532,7 @@ class StubProcessor:
             self.stats["updated_files"] = result["processed_files"]
             self.stats["inserted_stubs"] = result["successful_stubs"]
             self.stats["failed_files"] = len(result["errors"])
+            self.stats["missing_stubs"] = result.get("missing_stubs", 0)
             
             # 检查是否有错误
             if result["errors"]:

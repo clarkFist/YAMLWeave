@@ -460,6 +460,10 @@ class AppController:
                 self.log_info(f"文件总数: {result.get('total_files', 0)}")
                 self.log_info(f"处理成功文件: {result.get('processed_files', 0)}")
                 self.log_info(f"成功插入桩点: {result.get('successful_stubs', 0)}")
+
+                missing = result.get('missing_stubs', 0)
+                if missing > 0:
+                    self.log_warning(f"缺失桩代码锚点: {missing} 个")
                 
                 # 显示备份和结果目录信息
                 backup_dir = result.get('backup_dir', '')
