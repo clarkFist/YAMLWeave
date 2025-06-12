@@ -24,6 +24,9 @@ class StubProcessor:
         self.yaml_config = {}
         self.stats = {"scanned_files": 0, "updated_files": 0, "inserted_stubs": 0, "failed_files": 0}
         self.ui = ui
+
+        # 记录未找到锚点的文件
+        self.files_without_anchors = []
         
         # 输出UI对象信息
         print(f"\n=== StubProcessor初始化 ===")
@@ -88,6 +91,8 @@ class StubProcessor:
         self.tc_stats = {}
         # 锚点详细信息存储
         self.anchor_details = {}
+        # 无锚点文件列表
+        self.files_without_anchors = []
         
         # 调试UI对象
         if self.ui:
@@ -537,7 +542,15 @@ class StubProcessor:
                             except Exception as e:
                                 logger.warning(f"无法显示缺失提示弹窗: {str(e)}")
                     else:
-                        self.ui.log("[信息] 未找到有效锚点", tag="warning")
+                        if self.files_without_anchors:
+                            self.ui.log("[信息] 以下文件未找到锚点:", tag="warning")
+                            for fp in self.files_without_anchors[:10]:
+                                fname = os.path.basename(fp)
+                                self.ui.log(f"└─ {fname}", tag="warning")
+                            if len(self.files_without_anchors) > 10:
+                                self.ui.log(f"...还有{len(self.files_without_anchors)-10}个未显示...", tag="info")
+                        else:
+                            self.ui.log("[信息] 未找到有效锚点", tag="warning")
                     
                     self.ui.log("\n[信息] ===== 执行完成 =====", tag="header")
                     
@@ -845,7 +858,11 @@ class StubProcessor:
             # 处理整个文件失败的情况
             logger.error(f"处理文件 {filename} 异常: {str(file_err)}")
             logger.error(traceback.format_exc())
-        
+
+        # 如果文件未发现任何锚点，记录文件路径
+        if file_anchors_count == 0:
+            self.files_without_anchors.append(file_path)
+
         return '\n'.join(new_lines)
     
     def find_stub_code(self, tc_id, step_id, segment_id):
