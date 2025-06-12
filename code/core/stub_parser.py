@@ -131,6 +131,9 @@ class StubParser:
 
         # 用于统计缺失的桩代码锚点
         self.missing_anchors: List[Dict[str, Any]] = []
+
+        # 用于记录未找到任何锚点的文件
+        self.files_without_anchors: List[str] = []
     
     def set_yaml_handler(self, yaml_handler: YamlStubHandler):
         """
@@ -180,9 +183,8 @@ class StubParser:
         """
         解析新格式的锚点标识，在锚点位置插入桩代码
         
-        支持两种模式：
-        1. 基于锚点匹配：识别文件中的"// TC001 STEP1 segment1"格式锚点，并在该位置插入对应代码
-        2. 全局插入模式：当文件中没有锚点时，在文件开头插入所有YAML中定义的桩代码
+        仅在找到形如 ``// TC001 STEP1 segment1`` 的锚点时插入桩代码。
+        如果文件中未找到任何锚点，不再执行全局插入，而是记录文件名，供外部提示。
         
         Args:
             file_path: 文件路径
@@ -196,10 +198,6 @@ class StubParser:
             return []
         
         logger.info(f"开始处理文件 {file_path}")
-        
-        # 获取YAML中定义的所有测试用例
-        test_cases = self.yaml_handler.get_all_test_cases()
-        logger.info(f"YAML配置中存在的测试用例: {test_cases}")
         
         stub_points = []
 
@@ -264,34 +262,10 @@ class StubParser:
                 except Exception as e:
                     logger.error(f"解析锚点时发生错误: {anchor_text}, 错误: {e}")
         
-        # 如果文件中没有找到锚点，则在文件开头一次性插入所有桩代码（保留原有行为）
+        # 如果文件中没有找到锚点，记录文件信息，供外部提示
         if not found_anchors:
-            logger.info(f"文件 {file_path} 中未找到锚点，将在文件开头插入所有桩代码")
-            # 在文件的最前面添加所有定义的测试用例的桩代码
-            for tc_id in test_cases:
-                # 获取该测试用例下的所有步骤
-                steps = self.yaml_handler.get_steps_for_test_case(tc_id)
-                
-                for step_id in steps:
-                    # 获取该步骤下的所有代码段
-                    segments = self.yaml_handler.get_segments_for_step(tc_id, step_id)
-                    
-                    for segment_id in segments:
-                        # 获取代码段内容
-                        code = self.yaml_handler.get_stub_code(tc_id, step_id, segment_id)
-                        
-                        if code:
-                            logger.info(f"为文件 {file_path} 准备插入桩代码: {tc_id} {step_id} {segment_id}")
-                            
-                            # 添加到桩点列表，在文件开头插入
-                            stub_points.append({
-                                'test_case_id': f"{tc_id} {step_id} {segment_id}",
-                                'code': code,
-                                'line_number': 1,  # 在文件开头插入
-                                'original_line': 0,
-                                'file': file_path,
-                                'format': 'new'  # 标记为新格式
-                            })
+            logger.info(f"文件 {file_path} 中未找到锚点")
+            self.files_without_anchors.append(file_path)
         
         logger.info(f"文件 {file_path} 将插入 {len(stub_points)} 个桩点")
         return stub_points

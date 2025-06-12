@@ -371,6 +371,9 @@ class StubProcessor:
             # 重置缺失桩代码统计
             if hasattr(self, 'parser') and hasattr(self.parser, 'missing_anchors'):
                 self.parser.missing_anchors = []
+            # 重置无锚点文件列表
+            if hasattr(self, 'parser') and hasattr(self.parser, 'files_without_anchors'):
+                self.parser.files_without_anchors = []
 
             # 查找所有C文件
             c_files = find_c_files(root_dir)
@@ -500,6 +503,18 @@ class StubProcessor:
                         self.ui.log(f"[缺失] {msg}", tag="missing")
                     if hasattr(self.ui, 'update_status'):
                         self.ui.update_status(f"缺失桩代码 {missing_count} 个")
+
+            # 统计未发现锚点的文件列表
+            no_anchor_files = getattr(self.parser, 'files_without_anchors', [])
+            result["files_without_anchors"] = [os.path.relpath(p, root_dir) for p in no_anchor_files]
+            if no_anchor_files:
+                self.logger.info(f"未发现锚点的文件数: {len(no_anchor_files)}")
+                if hasattr(self, 'ui') and self.ui:
+                    self.ui.log("[信息] 以下文件未找到锚点:", tag="warning")
+                    for fp in result["files_without_anchors"][:10]:
+                        self.ui.log(f"└─ {fp}", tag="warning")
+                    if len(no_anchor_files) > 10:
+                        self.ui.log(f"...还有{len(no_anchor_files)-10}个未显示...", tag="info")
         except Exception as e:
             error_msg = f"处理目录时出错: {str(e)}"
             self.logger.error(error_msg)
