@@ -1,0 +1,334 @@
+# YAMLWeave 综合测试配置文件
+# 包含所有基础测试和高级测试用例
+# ---------------------------------------
+
+# =========== 基础测试用例 ===========
+# YAMLWeave 基础测试配置
+# 用于验证在多个文件场景下成功插入代码
+
+# 模块1 测试用例
+TC001:
+  STEP1:
+    segment1: |
+      if (value < 0) {
+          printf("模块1-文件1: 检测到无效值 %d\n", value);
+          return 0;
+      }
+  STEP2:
+    segment1: |
+      int processed_data = data * 2;
+      printf("模块1-文件1: 数据已处理为 %d\n", processed_data);
+  STEP3:
+    segment1: |
+      printf("模块1-文件2: 开始处理消息 '%s'\n", message);
+      if (message == NULL || *message == '\0') {
+          printf("模块1-文件2: 无效消息!\n");
+          return;
+      }
+  STEP4:
+    segment1: |
+      int system_status = 1;
+      if (system_status != 1) {
+          printf("模块1-文件2: 系统状态异常\n");
+          return 0;
+      }
+
+# 模块2 测试用例
+TC002:
+  STEP1:
+    segment1: |
+      static int initialized = 0;
+      if (initialized) {
+          printf("模块2-文件1: 已经初始化过了\n");
+          return;
+      }
+      initialized = 1;
+  STEP2:
+    segment1: |
+      static int resources_released = 0;
+      if (resources_released) {
+          printf("模块2-文件1: 资源已释放\n");
+          return;
+      }
+      resources_released = 1;
+  STEP3:
+    segment1: |
+      if (raw_data < 0) {
+          printf("模块2-文件2: 无效原始数据 %d\n", raw_data);
+          return 0.0f;
+      }
+  STEP4:
+    segment1: |
+      float diff = result - expected;
+      float tolerance = expected * 0.05f;
+      printf("模块2-文件2: 差异 %.2f, 容差 %.2f\n", diff, tolerance);
+
+# =========== 高级测试用例 ===========
+# YAMLWeave 高级测试配置文件
+# 演示不同命名风格的segment，包括序号型和功能描述型
+
+# ====== 系统初始化测试 ======
+
+# TC101: 初始化测试 - 混合使用不同命名风格
+TC101:
+  # STEP1: 系统初始化
+  STEP1:
+    # 序号型命名
+    segment1: |
+      if (config == NULL) {
+          printf("错误: 配置为空\n");
+          return INIT_ERROR_NULL_CONFIG;
+      }
+      printf("配置检查通过\n");
+    
+    # 功能描述型命名
+    log_init: |
+      int log_status = init_log_system(config->log_level);
+      if (log_status != SUCCESS) {
+          printf("警告: 日志系统初始化失败 (状态码: %d)\n", log_status);
+      } else {
+          log_message(LOG_INFO, "日志系统已初始化");
+      }
+    
+    # 序号型命名
+    segment2: |
+      system_context = (SystemContext*)malloc(sizeof(SystemContext));
+      if (system_context == NULL) {
+          log_message(LOG_ERROR, "致命错误: 无法分配系统上下文内存");
+          return INIT_ERROR_MEMORY_ALLOC;
+      }
+      memset(system_context, 0, sizeof(SystemContext));
+  
+  # STEP2: 模块初始化
+  STEP2:
+    # 功能描述型命名
+    network_init: |
+      system_context->network_handle = network_initialize(config->net_params);
+      if (system_context->network_handle == NULL) {
+          log_message(LOG_ERROR, "网络模块初始化失败");
+          return INIT_ERROR_NETWORK;
+      }
+      log_message(LOG_INFO, "网络模块已初始化");
+    
+    # 位置型命名
+    before_db_init: |
+      log_message(LOG_INFO, "准备初始化数据库连接...");
+      if (config->db_host == NULL) {
+          log_message(LOG_ERROR, "数据库主机未配置");
+          return INIT_ERROR_DATABASE_CONFIG;
+      }
+    
+    # 序号型命名
+    segment3: |
+      DatabaseConfig db_config;
+      db_config.host = config->db_host;
+      db_config.port = config->db_port;
+      db_config.username = config->db_user;
+      db_config.password = config->db_password;
+      
+      system_context->db_handle = database_connect(&db_config);
+      if (system_context->db_handle == NULL) {
+          log_message(LOG_ERROR, "数据库模块初始化失败");
+          return INIT_ERROR_DATABASE;
+      }
+      log_message(LOG_INFO, "数据库模块已初始化");
+
+# ====== 数据验证测试 ======
+
+# TC102: 数据验证测试 - 混合使用不同命名风格
+TC102:
+  # STEP1: 输入数据验证
+  STEP1:
+    # 功能描述型命名
+    format_check: |
+      if (data == NULL || data->format != DATA_FORMAT_V1) {
+          log_message(LOG_ERROR, "数据格式无效");
+          return VALIDATION_ERROR_FORMAT;
+      }
+    
+    # 序号型命名
+    segment1: |
+      uint32_t calculated_checksum = calculate_checksum(data->buffer, data->length);
+      if (calculated_checksum != data->checksum) {
+          log_message(LOG_WARNING, "数据校验和不匹配: 期望 %u, 实际 %u", 
+                     data->checksum, calculated_checksum);
+          return VALIDATION_ERROR_CHECKSUM;
+      }
+    
+    # 组合型命名
+    check_business_rules: |
+      if (data->timestamp < get_system_time() - MAX_DATA_AGE) {
+          log_message(LOG_WARNING, "数据已过期");
+          return VALIDATION_ERROR_EXPIRED;
+      }
+      
+      if (data->value < MIN_ACCEPTABLE_VALUE || data->value > MAX_ACCEPTABLE_VALUE) {
+          log_message(LOG_WARNING, "数据值超出可接受范围: %f", data->value);
+          return VALIDATION_ERROR_VALUE_RANGE;
+      }
+
+  # STEP2: 权限验证
+  STEP2:
+    # 序号型命名
+    segment1: |
+      UserContext* user = get_current_user();
+      if (user == NULL) {
+          log_message(LOG_ERROR, "未找到用户上下文");
+          return VALIDATION_ERROR_NO_USER;
+      }
+    
+    # 功能描述型命名
+    verify_permissions: |
+      if ((user->permissions & PERMISSION_DATA_WRITE) == 0) {
+          log_message(LOG_WARNING, "用户 %s 没有数据写入权限", user->username);
+          return VALIDATION_ERROR_PERMISSION;
+      }
+      log_message(LOG_INFO, "用户 %s 权限验证通过", user->username);
+    
+    # 后处理命名
+    after_verification: |
+      log_message(LOG_INFO, "验证完成，更新用户访问时间戳");
+      user->last_access_time = get_system_time();
+
+# ====== 错误处理测试 ======
+
+# TC103: 错误处理测试 - 混合使用不同命名风格
+TC103:
+  # STEP1: 资源清理
+  STEP1:
+    # 序号型命名
+    segment1: |
+      if (resource != NULL) {
+          if (resource->buffer != NULL) {
+              free(resource->buffer);
+              resource->buffer = NULL;
+          }
+          free(resource);
+          resource = NULL;
+      }
+    
+    # 功能描述型命名
+    close_connections: |
+      if (connection_is_open(conn)) {
+          log_message(LOG_INFO, "关闭连接...");
+          int close_status = connection_close(conn);
+          if (close_status != SUCCESS) {
+              log_message(LOG_WARNING, "关闭连接时出错: %d", close_status);
+              return close_status;
+          }
+      }
+    
+    # 动作型命名
+    rollback: |
+      if (transaction_is_active(transaction)) {
+          log_message(LOG_INFO, "回滚事务...");
+          int rollback_status = transaction_rollback(transaction);
+          if (rollback_status != SUCCESS) {
+              log_message(LOG_ERROR, "事务回滚失败: %d", rollback_status);
+              // 即使回滚失败也继续处理
+          }
+      }
+
+  # STEP2: 错误报告
+  STEP2:
+    # 功能描述型命名
+    log_error: |
+      log_message(LOG_ERROR, "操作失败: %s (错误码: %d)", error_description, error_code);
+      if (error_details != NULL) {
+          log_message(LOG_DEBUG, "错误详情: %s", error_details);
+      }
+    
+    # 序号型命名
+    segment2: |
+      if (error_code >= CRITICAL_ERROR_THRESHOLD) {
+          send_admin_notification("系统错误", error_description);
+          log_message(LOG_INFO, "已发送管理员通知");
+      }
+    
+    # 状态型命名
+    completed: |
+      log_message(LOG_INFO, "错误处理流程已完成");
+      return ERROR_HANDLED;
+
+# ====== 性能与边界测试 ======
+
+# TC201: 性能测试 - 测试桩代码对性能的影响
+TC201:
+  # STEP1: 性能基准测试
+  STEP1:
+    benchmark_start: |
+      clock_t start_time = clock();
+      long long iteration_counter = 0;
+      printf("性能测试开始\n");
+    
+    benchmark_end: |
+      clock_t end_time = clock();
+      double elapsed_seconds = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+      printf("性能测试完成: 耗时 %.6f 秒, 迭代次数 %lld\n", elapsed_seconds, iteration_counter);
+      printf("每秒处理 %.2f 次操作\n", iteration_counter / elapsed_seconds);
+
+# TC202: 边界测试 - 测试各种边界情况
+TC202:
+  # STEP1: 边界值测试
+  STEP1:
+    test_min_max: |
+      // 测试整型边界值
+      if (value == INT_MIN || value == INT_MAX) {
+          printf("检测到整型边界值: %d\n", value);
+          return BOUNDARY_CASE;
+      }
+      
+      // 测试浮点数边界值
+      if (fabs(double_value) < 1e-10 || fabs(double_value) > 1e10) {
+          printf("检测到浮点数边界值: %e\n", double_value);
+          return BOUNDARY_CASE;
+      }
+    
+    test_special_chars: |
+      // 测试特殊字符输入
+      if (strchr(input, '\\') || strchr(input, '\"') || strchr(input, '\'')) {
+          printf("检测到特殊字符输入\n");
+          // 对特殊字符进行转义处理
+          char* escaped = escape_string(input);
+          printf("转义后: %s\n", escaped);
+          free(escaped);
+      }
+
+# TC203: 复杂代码段测试 - 测试多级缩进和循环
+TC203:
+  STEP1:
+    complex_structures: |
+      // 多级嵌套的数据结构和控制流测试
+      for (int i = 0; i < array_size; i++) {
+          if (data_array[i].type == TYPE_COMPOSITE) {
+              CompositeData* composite = (CompositeData*)data_array[i].data;
+              
+              for (int j = 0; j < composite->child_count; j++) {
+                  ChildData* child = &composite->children[j];
+                  
+                  if (child->flags & FLAG_REQUIRES_PROCESSING) {
+                      switch (child->category) {
+                          case CATEGORY_A:
+                              process_category_a(child);
+                              break;
+                          case CATEGORY_B:
+                              if (child->priority > HIGH_PRIORITY) {
+                                  process_high_priority_b(child);
+                              } else {
+                                  process_normal_priority_b(child);
+                              }
+                              break;
+                          default:
+                              log_message(LOG_WARNING, "未知类别: %d", child->category);
+                              continue;
+                      }
+                      
+                      // 统计处理结果
+                      processed_count++;
+                      total_size += child->size;
+                  }
+              }
+          }
+      }
+      
+      printf("处理完成: %d 项, 总大小: %lu 字节\n", processed_count, total_size);
