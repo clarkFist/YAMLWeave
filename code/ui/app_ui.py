@@ -9,6 +9,7 @@ import sys
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext
 from .rounded_progressbar import RoundedProgressBar
+from .budget_window import BudgetWindow
 import datetime
 import re
 from typing import Callable, Dict, List, Optional, Any, Tuple
@@ -78,6 +79,7 @@ class YAMLWeaveUI:
 
         help_menu = tk.Menu(menu_bar, tearoff=0)
         help_menu.add_command(label="关于", command=self._show_about)
+        help_menu.add_command(label="月度预算", command=self._open_budget)
         menu_bar.add_cascade(label="帮助", menu=help_menu)
         self.root.config(menu=menu_bar)
 
@@ -286,6 +288,13 @@ class YAMLWeaveUI:
         else:
             self.log("[错误] 未设置导出回调函数", tag="error")
             self.update_status("导出失败")
+
+    def _open_budget(self):
+        """打开月度预算窗口"""
+        if not hasattr(self, "budget_window") or not self.budget_window.winfo_exists():
+            self.budget_window = BudgetWindow(self.root)
+        else:
+            self.budget_window.lift()
     
     def _show_about(self):
         """显示关于对话框"""

@@ -6,3 +6,4 @@ __version__ = "1.0.0"
 from code.ui.app_ui import YAMLWeaveUI
 from code.ui.app_controller import AppController
 from code.ui.rounded_progressbar import RoundedProgressBar
+from code.ui.budget_window import BudgetWindow
