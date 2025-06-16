@@ -128,8 +128,15 @@ class YAMLWeaveUI:
         
         # 进度条
         ttk.Label(status_frame, text="进度:").pack(side=tk.LEFT, padx=5)
-        self.progress_bar = RoundedProgressBar(status_frame, width=300, height=10,
-                                               bg_color="#444444", fg_color="#FFFFFF", radius=5)
+        # 调整进度条颜色，使用浅色背景和深色填充，提升可读性
+        self.progress_bar = RoundedProgressBar(
+            status_frame,
+            width=300,
+            height=10,
+            bg_color="#DDDDDD",  # 就绪状态为浅色
+            fg_color="#444444",  # 填充过程为深色
+            radius=5,
+        )
         self.progress_bar.pack(side=tk.LEFT, padx=5, pady=5)
         
         # 设置列权重以允许自动调整大小

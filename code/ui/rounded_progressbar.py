@@ -3,7 +3,7 @@ import tkinter as tk
 class RoundedProgressBar(tk.Canvas):
     """自定义圆角进度条控件"""
 
-    def __init__(self, master, width=300, height=10, bg_color="#3a3a3a", fg_color="#ffffff", radius=5, *args, **kwargs):
+    def __init__(self, master, width=300, height=10, bg_color="#DDDDDD", fg_color="#444444", radius=5, *args, **kwargs):
         super().__init__(master, width=width, height=height, highlightthickness=0, bg=bg_color, *args, **kwargs)
         self._width = width
         self._height = height
