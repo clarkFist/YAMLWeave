@@ -8,6 +8,7 @@ import os
 import sys
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext
+from .rounded_progressbar import RoundedProgressBar
 import datetime
 import re
 from typing import Callable, Dict, List, Optional, Any, Tuple
@@ -127,8 +128,9 @@ class YAMLWeaveUI:
         
         # 进度条
         ttk.Label(status_frame, text="进度:").pack(side=tk.LEFT, padx=5)
-        self.progress_bar = ttk.Progressbar(status_frame, variable=self.progress, length=300, mode='determinate')
-        self.progress_bar.pack(side=tk.LEFT, padx=5)
+        self.progress_bar = RoundedProgressBar(status_frame, width=300, height=10,
+                                               bg_color="#444444", fg_color="#FFFFFF", radius=5)
+        self.progress_bar.pack(side=tk.LEFT, padx=5, pady=5)
         
         # 设置列权重以允许自动调整大小
         input_frame.columnconfigure(1, weight=1)
@@ -308,6 +310,8 @@ class YAMLWeaveUI:
     def update_progress(self, value, status_text=None, current=None, total=None):
         """更新进度条和状态栏"""
         self.progress.set(value)
+        if hasattr(self, "progress_bar") and hasattr(self.progress_bar, "set"):
+            self.progress_bar.set(value)
         
         if status_text:
             self.update_status(status_text)
