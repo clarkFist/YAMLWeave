@@ -274,20 +274,6 @@ YAMLWeave_v1.0.0_20250514/
 
 ---
 
-## 🎨 UI 示例
-
-仓库新增了一个使用 **customtkinter** 打造的 iOS 风格界面示例 `ios_style_modern.py`，
-运行方式如下：
-
-```bash
-pip install -r requirements.txt
-python ios_style_modern.py
-```
-
-示例展示了圆角输入框、下拉菜单以及多种配色按钮，可用于体验更加现代的界面效果。
-
----
-
 ## 📝 更新日志
 
 ### v1.0.0 (2025-05-14)
