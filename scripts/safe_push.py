@@ -20,7 +20,7 @@ def safe_push(message: str = "更新脚本快速更新") -> None:
         sys.exit(1)
 
     for attempt in range(1, MAX_ATTEMPTS + 1):
-        try:
+        try:            
             print(f"Attempt {attempt} to pull and push changes...")
             subprocess.run(["git", "pull", "--rebase"], check=True)
             subprocess.run(["git", "push"], check=True)
