@@ -1,0 +1,15 @@
+{
+    "python.defaultInterpreterPath": "C:\\Users\\clark\\anaconda3\\python.exe",
+    "python.condaPath": "C:\\Users\\clark\\anaconda3\\Scripts\\conda.exe",
+    "python.terminal.activateEnvironment": true,
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.formatting.provider": "black",
+    "editor.formatOnSave": true,
+    "python.analysis.extraPaths": [
+        "C:\\Users\\clark\\anaconda3\\Lib\\site-packages"
+    ],
+    "files.associations": {
+        "DEMO.C": "cpp"
+    }
+} 
