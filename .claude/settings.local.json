@@ -10,7 +10,9 @@
       "Bash(git remote set-url:*)",
       "Bash(nslookup:*)",
       "Bash(git pull:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(git commit:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
