@@ -114,7 +114,8 @@ class CommentHandler:
         marked_code = []
         for line in code_lines:
             if line.strip():
-                marked_code.append(f"{line}  // 通过桩插入")
+                # 同时附加 ASCII 标记，保证反向提取在非 UTF-8 写回时仍可识别
+                marked_code.append(f"{line}  // 通过桩插入 | STUB")
             else:
                 marked_code.append(line)
         

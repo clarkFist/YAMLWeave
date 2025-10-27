@@ -385,7 +385,8 @@ class StubParser:
                 code_lines = stub_point['code'].splitlines()
                 formatted_code = []
                 for code_line in code_lines:
-                    formatted_code.append(f"{indent}{code_line}  // 通过桩插入")
+                    # 同时附加 ASCII 标记，避免在非 UTF-8 编码写回时丢失中文标记
+                    formatted_code.append(f"{indent}{code_line}  // 通过桩插入 | STUB")
                 
                 # 在指定位置插入代码
                 lines.insert(line_num, "\n".join(formatted_code))
@@ -426,7 +427,7 @@ class StubParser:
                         tc_id, step_id, seg_id = parts[0], parts[1], parts[2]
                         i += 1
                         code_lines = []
-                        while i < len(lines) and '通过桩插入' in lines[i]:
+                        while i < len(lines) and ('通过桩插入' in lines[i] or 'STUB' in lines[i]):
                             cleaned = lines[i].split('//')[0].rstrip()
                             code_lines.append(cleaned)
                             i += 1
