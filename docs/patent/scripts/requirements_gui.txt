@@ -1,0 +1,26 @@
+# GUI增强版测试脚本依赖
+#
+# 安装命令: pip install -r requirements_gui.txt
+
+# 核心GUI库
+tkinter  # 通常随Python安装，如果没有需要单独安装
+
+# 图表和可视化库
+matplotlib>=3.5.0
+numpy>=1.21.0
+
+# 系统通知库（可选）
+plyer>=2.1.0  # 跨平台系统通知
+tkinter-tooltip>=2.0.0  # 工具提示
+
+# 美化UI的库（可选）
+ttkthemes>=3.2.2  # ttk主题
+Pillow>=8.0.0  # 图像处理支持
+
+# 如果需要更高级的图表
+seaborn>=0.11.0  # 统计图表美化
+
+# 现代化替代方案（可选）
+# kivy>=2.1.0  # 跨平台GUI框架
+# PyQt5>=5.15.0  # 功能强大的GUI框架
+# DearPyGui>=1.8.0  # 现代化GUI引擎

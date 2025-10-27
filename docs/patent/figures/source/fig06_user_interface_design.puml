@@ -1,0 +1,126 @@
+@startuml
+skinparam defaultFontSize 16
+skinparam defaultFontName "SimHei"
+skinparam rectangle {
+  FontSize 18
+  FontName "SimHei"
+  BorderThickness 3
+  RoundCorner 8
+}
+
+title 用户界面设计图（GUI和CLI）
+
+skinparam backgroundColor #F8F8F8
+
+rectangle "图形用户界面 (GUI)" as gui_section #E3F2FD {
+    rectangle "顶部控制区" as top_controls #E1F5FE {
+        rectangle "项目目录选择" as project_dir #C8E6C9
+        rectangle "YAML配置文件" as yaml_file #C8E6C9
+        rectangle "模式选择" as mode_select #C8E6C9
+    }
+
+    rectangle "中央操作区" as center_area #BBDEFB {
+        rectangle "启动按钮" as start_btn #C8E6C9
+        rectangle "进度条显示" as progress_bar #C8E6C9
+        rectangle "状态指示器" as status_indicator #C8E6C9
+    }
+
+    rectangle "日志输出区" as log_area #E1F5FE {
+        rectangle "实时日志显示" as realtime_log #FFECB3
+        rectangle "日志级别过滤" as log_filter #FFECB3
+        rectangle "导出日志按钮" as export_log #FFECB3
+    }
+
+    rectangle "结果统计区" as stats_area #F3E5F5 {
+        rectangle "处理文件数量" as file_count #FCE4EC
+        rectangle "插桩点统计" as stub_stats #FCE4EC
+        rectangle "执行时间" as exec_time #FCE4EC
+    }
+}
+
+rectangle "命令行界面 (CLI)" as cli_section #FFF3E0 {
+    rectangle "基本命令格式" as basic_cmd #FFECB3 {
+        note as cmd_format
+            <size:14>
+            python cli/main.py [选项] [参数]
+
+            必选参数：
+            --project-dir PATH    项目根目录
+            --yaml-file PATH      YAML配置文件
+
+            可选参数：
+            --mode {traditional|separate}  插桩模式
+            --backup              创建备份(默认:true)
+            --verbose             详细输出模式
+            --help                显示帮助信息
+            </size>
+        end note
+    }
+
+    rectangle "使用示例" as usage_examples #FFECB3 {
+        note as examples
+            <size:14>
+            # 基本用法
+            python cli/main.py --project-dir /path/to/project \\
+                              --yaml-file config.yaml
+
+            # 指定分离模式
+            python cli/main.py --project-dir /path/to/project \\
+                              --yaml-file config.yaml \\
+                              --mode separate
+
+            # 详细输出模式
+            python cli/main.py --project-dir /path/to/project \\
+                              --yaml-file config.yaml \\
+                              --verbose
+            </size>
+        end note
+    }
+
+    rectangle "输出示例" as output_example #FFECB3 {
+        note as output
+            <size:14>
+            [2024-06-20 14:30:25] INFO: 开始处理项目
+            [2024-06-20 14:30:26] INFO: 找到 25 个C文件
+            [2024-06-20 14:30:27] INFO: 识别 48 个锚点
+            [2024-06-20 14:30:28] INFO: 插入 48 个桩点
+            [2024-06-20 14:30:29] INFO: 处理完成
+
+            执行统计：
+            - 处理文件: 25 个
+            - 插桩点数: 48 个
+            - 执行时间: 4.2 秒
+            - 备份目录: logs_20240620_143025/backup
+            </size>
+        end note
+    }
+}
+
+rectangle "界面交互流程" as interaction_flow #F3E5F5 {
+    rectangle "GUI操作流程" as gui_flow #FCE4EC {
+        rectangle "1.选择项目目录" as gui_step1 #C8E6C9
+        rectangle "2.选择YAML文件" as gui_step2 #C8E6C9
+        rectangle "3.配置处理选项" as gui_step3 #C8E6C9
+        rectangle "4.点击开始处理" as gui_step4 #C8E6C9
+        rectangle "5.监控实时进度" as gui_step5 #C8E6C9
+    }
+
+    rectangle "CLI操作流程" as cli_flow #FCE4EC {
+        rectangle "1.准备命令参数" as cli_step1 #C8E6C9
+        rectangle "2.执行命令行" as cli_step2 #C8E6C9
+        rectangle "3.观察输出信息" as cli_step3 #C8E6C9
+        rectangle "4.检查执行结果" as cli_step4 #C8E6C9
+    }
+}
+
+' 连接关系
+gui_step1 --> gui_step2
+gui_step2 --> gui_step3
+gui_step3 --> gui_step4
+gui_step4 --> gui_step5
+
+cli_step1 --> cli_step2
+cli_step2 --> cli_step3
+cli_step3 --> cli_step4
+
+@enduml

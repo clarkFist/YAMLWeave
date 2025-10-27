@@ -1,0 +1,139 @@
+@startuml
+skinparam defaultFontSize 16
+skinparam defaultFontName "SimHei"
+skinparam rectangle {
+  FontSize 18
+  FontName "SimHei"
+  BorderThickness 3
+  RoundCorner 8
+}
+
+title 双模式插桩工作原理对比图
+
+skinparam backgroundColor #F8F8F8
+
+rectangle "传统内嵌模式" as traditional_mode #E3F2FD {
+    rectangle "源文件示例" as trad_source #E1F5FE {
+        note as trad_note
+            <size:14>
+            // TC001 STEP1: 边界检查
+            // code: if(data == NULL) return -1;
+            // code: printf("检查数据边界");
+
+            int process_data(void* data) {
+                // 业务逻辑代码
+                return 0;
+            }
+            </size>
+        end note
+    }
+
+    rectangle "处理流程" as trad_process #BBDEFB {
+        rectangle "1.扫描注释" as t1 #E8F5E9
+        rectangle "2.提取桩代码" as t2 #E8F5E9
+        rectangle "3.直接插入" as t3 #E8F5E9
+    }
+
+    rectangle "插桩结果" as trad_result #E1F5FE {
+        note as trad_result_note
+            <size:14>
+            int process_data(void* data) {
+                // TC001 STEP1: 边界检查
+                if(data == NULL) return -1;
+                printf("检查数据边界");
+
+                // 业务逻辑代码
+                return 0;
+            }
+            </size>
+        end note
+    }
+}
+
+rectangle "创新分离模式" as separate_mode #FFF3E0 {
+    rectangle "源文件示例" as sep_source #FCE4EC {
+        note as sep_note
+            <size:14>
+            // TC001 STEP1 boundary_check
+
+            int process_data(void* data) {
+                // 业务逻辑代码
+                return 0;
+            }
+            </size>
+        end note
+    }
+
+    rectangle "YAML配置文件" as yaml_config #FFECB3 {
+        note as yaml_note
+            <size:14>
+            TC001:
+              STEP1:
+                boundary_check: |
+                  if(data == NULL) return -1;
+                  printf("检查数据边界");
+            </size>
+        end note
+    }
+
+    rectangle "处理流程" as sep_process #E8F5E9 {
+        rectangle "1.识别锚点" as s1 #C8E6C9
+        rectangle "2.查询YAML" as s2 #C8E6C9
+        rectangle "3.映射插入" as s3 #C8E6C9
+    }
+
+    rectangle "插桩结果" as sep_result #FCE4EC {
+        note as sep_result_note
+            <size:14>
+            int process_data(void* data) {
+                // TC001 STEP1 boundary_check
+                if(data == NULL) return -1;
+                printf("检查数据边界");
+
+                // 业务逻辑代码
+                return 0;
+            }
+            </size>
+        end note
+    }
+}
+
+rectangle "对比优势" as advantages #F3E5F5 {
+    rectangle "传统模式特点" as trad_features #FFCDD2 {
+        note as trad_features_note
+            <size:16>
+            ✓ 代码自包含
+            ✓ 无外部依赖
+            ✗ 代码冗余
+            ✗ 维护困难
+            ✗ 版本控制复杂
+            </size>
+        end note
+    }
+
+    rectangle "分离模式特点" as sep_features #C8E6C9 {
+        note as sep_features_note
+            <size:16>
+            ✓ 配置集中管理
+            ✓ 代码复用性强
+            ✓ 版本控制友好
+            ✓ 维护成本低
+            ✓ 支持批量修改
+            </size>
+        end note
+    }
+}
+
+' 连接关系
+t1 --> t2
+t2 --> t3
+trad_source --> trad_process
+trad_process --> trad_result
+
+s1 --> s2
+s2 --> s3
+sep_source --> sep_process
+yaml_config --> sep_process
+sep_process --> sep_result
+
+@enduml

@@ -1,0 +1,98 @@
+@startuml
+!define RECTANGLE class
+skinparam defaultFontSize 14
+skinparam defaultFontName "SimHei"
+skinparam activity {
+  FontSize 16
+  FontName "SimHei"
+}
+skinparam rectangle {
+  FontSize 16
+  FontName "SimHei"
+  BorderThickness 2
+}
+skinparam diamond {
+  FontSize 14
+  FontName "SimHei"
+  BorderThickness 2
+}
+
+title 面向嵌入式软件的自动化插桩处理流程图
+
+start
+
+:开始解析文件;
+note right: 系统启动入口
+
+:读取文件内容;
+note right: 文件I/O操作
+
+if (检测文件编码?) then (成功)
+  :应用多种编码识别;
+  note right: UTF-8/GBK/ASCII
+else (失败)
+  :跳过当前文件;
+  note right: 记录错误日志
+  stop
+endif
+
+:遍历文件内容;
+note right: 逐行扫描处理
+
+if (发现锚点信息?) then (是)
+  :应用双模式识别算法;
+  note right: 传统模式/分离模式
+else (否)
+  :跳转到下一个文件;
+  note right: 无需处理
+  stop
+endif
+
+if (匹配桩代码内容?) then (分离模式)
+  :记录TC/STEP/segment信息;
+  note right: 三元组标识符
+
+  :解析三元组结构;
+  note left: 测试用例ID\n步骤ID\ncode片段ID
+
+  :查询YAML配置;
+  note right: 三级索引查询
+
+  if (查找桩代码?) then (找到)
+    :创建插桩点信息;
+  else (未找到)
+    :创建插桩失败记录;
+    note right: 记录错误信息
+  endif
+
+else (传统模式)
+  :记录TC/STEP格式;
+  note right: 测试用例和步骤
+
+  :提取单行和多行代码内容;
+  note left: 从注释中\n提取code内容
+
+  :创建插桩点信息;
+  note right: 传统桩代码
+endif
+
+:将插桩信息添加到列表;
+note right: 统一管理
+
+:处理下一行;
+note right: 继续扫描
+
+if (是否到达文件末尾?) then (是)
+  :处理完整的插桩列表;
+  note right: 批量插入
+
+  :应用时间戳目录管理;
+  note left: logs_YYYYMMDD_HHMMSS\n格式目录
+
+  stop
+else (否)
+  :继续遍历;
+  note right: 返回扫描循环
+endif
+
+@enduml

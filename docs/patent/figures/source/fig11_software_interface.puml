@@ -1,0 +1,129 @@
+@startuml
+skinparam defaultFontSize 16
+skinparam defaultFontName "SimHei"
+skinparam rectangle {
+  FontSize 18
+  FontName "SimHei"
+  BorderThickness 3
+  RoundCorner 8
+}
+
+title 代码插桩工具软件界面
+
+skinparam backgroundColor #F8F8F8
+
+rectangle "YAMLWeave - C代码自动化插桩工具 v1.0" as main_window #E3F2FD {
+
+    rectangle "菜单栏" as menu_bar #E1F5FE {
+        rectangle "文件(F)" as file_menu #C8E6C9
+        rectangle "编辑(E)" as edit_menu #C8E6C9
+        rectangle "工具(T)" as tools_menu #C8E6C9
+        rectangle "帮助(H)" as help_menu #C8E6C9
+    }
+
+    rectangle "工具栏" as toolbar #BBDEFB {
+        rectangle "新建项目" as new_project #C8E6C9
+        rectangle "打开项目" as open_project #C8E6C9
+        rectangle "保存配置" as save_config #C8E6C9
+        rectangle "开始处理" as start_process #C8E6C9
+        rectangle "停止处理" as stop_process #C8E6C9
+    }
+
+    rectangle "主配置区域" as config_area #E1F5FE {
+        rectangle "项目设置" as project_settings #FFECB3 {
+            rectangle "项目目录: [选择目录...]" as project_dir_input #FFF9C4
+            rectangle "YAML配置: [选择文件...]" as yaml_file_input #FFF9C4
+            rectangle "输出目录: [自动生成]" as output_dir_input #FFF9C4
+        }
+
+        rectangle "处理选项" as process_options #FFECB3 {
+            rectangle "插桩模式:" as mode_label #FFF9C4
+            rectangle "○ 传统内嵌模式  ● 分离锚点模式" as mode_radio #FFF9C4
+            rectangle "☑ 创建备份文件" as backup_checkbox #FFF9C4
+            rectangle "☑ 详细日志输出" as verbose_checkbox #FFF9C4
+        }
+    }
+
+    rectangle "状态监控区域" as status_area #F3E5F5 {
+        rectangle "当前状态" as current_status #FCE4EC {
+            rectangle "状态: 就绪" as status_label #E8F5E9
+            rectangle "进度: ████████░░ 80%" as progress_bar #E8F5E9
+            rectangle "耗时: 00:02:15" as elapsed_time #E8F5E9
+        }
+
+        rectangle "统计信息" as statistics_info #FCE4EC {
+            rectangle "发现文件: 25 个" as files_found #E8F5E9
+            rectangle "处理文件: 20 个" as files_processed #E8F5E9
+            rectangle "锚点数量: 48 个" as anchors_found #E8F5E9
+            rectangle "插桩成功: 45 个" as stubs_inserted #E8F5E9
+        }
+    }
+
+    rectangle "日志输出区域" as log_output_area #FFECB3 {
+        rectangle "日志过滤器" as log_filter #FFF9C4 {
+            rectangle "☑ DEBUG  ☑ INFO  ☑ WARN  ☑ ERROR" as level_filters #FFFDE7
+        }
+
+        rectangle "日志内容显示" as log_content #FFF9C4 {
+            note as log_text
+                <size:14>
+                [14:30:25] INFO  开始扫描项目目录...
+                [14:30:26] INFO  找到 25 个 C/H 文件
+                [14:30:27] DEBUG 正在处理文件: src/main.c
+                [14:30:28] INFO  在 main.c 中发现 3 个锚点
+                [14:30:29] INFO  成功插入 3 个桩代码
+                [14:30:30] WARN  跳过文件: test.c (无锚点)
+                [14:30:31] INFO  处理完成，共插入 45 个桩点
+                </size>
+            end note
+        }
+
+        rectangle "日志操作按钮" as log_buttons #FFF9C4 {
+            rectangle "清空日志" as clear_log #FFFDE7
+            rectangle "导出日志" as export_log #FFFDE7
+            rectangle "查找日志" as search_log #FFFDE7
+        }
+    }
+
+    rectangle "底部状态栏" as status_bar #E1F5FE {
+        rectangle "就绪  |  项目: /path/to/project  |  配置: config.yaml  |  v1.0.0" as status_info #C8E6C9
+    }
+
+    rectangle "右侧面板" as right_panel #BBDEFB {
+        rectangle "文件浏览器" as file_browser #C8E6C9 {
+            note as file_tree
+                <size:14>
+                📁 project/
+                ├── 📁 src/
+                │   ├── 📄 main.c ✓
+                │   ├── 📄 utils.c ✓
+                │   └── 📄 config.c ✓
+                ├── 📁 include/
+                │   ├── 📄 common.h ✓
+                │   └── 📄 types.h ○
+                └── 📄 config.yaml
+                </size>
+            end note
+        }
+
+        rectangle "锚点预览" as anchor_preview #C8E6C9 {
+            note as anchor_info
+                <size:14>
+                选中文件: src/main.c
+
+                锚点列表:
+                • TC001 STEP1 init_check
+                • TC001 STEP2 param_validate
+                • TC002 STEP1 error_handle
+
+                预览桩代码:
+                if(data == NULL) {
+                    return ERROR_NULL_PARAM;
+                }
+                </size>
+            end note
+        }
+    }
+}
+
+@enduml

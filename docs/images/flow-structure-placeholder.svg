@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <defs>
+    <style>
+      .title { font: 700 28px/1.2 "Segoe UI", Arial, sans-serif; fill: #222; }
+      .sub   { font: 400 16px/1.4 "Segoe UI", Arial, sans-serif; fill: #444; }
+      .box   { fill: #F3F7FF; stroke: #5B8FF9; stroke-width: 2; rx: 8; }
+      .edge  { stroke: #999; stroke-width: 2; marker-end: url(#arrow); fill: none; }
+      .cap   { font: 600 14px/1.2 "Segoe UI", Arial, sans-serif; fill: #0B5; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L10,3 L0,6 Z" fill="#999" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="40" y="56" class="title">YAMLWeave 流程结构图（占位）</text>
+  <text x="40" y="86" class="sub">此图为占位示意：展示核心处理链路。可替换为正式流程图。</text>
+
+  <!-- Nodes -->
+  <rect x="40"  y="130" width="200" height="70" class="box"/>
+  <text x="60"  y="170" class="sub">选择项目目录 / YAML</text>
+
+  <rect x="300" y="130" width="220" height="70" class="box"/>
+  <text x="320" y="160" class="sub">扫描 .c 文件</text>
+  <text x="320" y="180" class="sub">发现不足 → 生成 sample.c</text>
+
+  <rect x="580" y="120" width="320" height="90" class="box"/>
+  <text x="600" y="152" class="sub">解析锚点：</text>
+  <text x="600" y="172" class="sub">• 优先新格式 // TC… STEP… segment</text>
+  <text x="600" y="192" class="sub">• 回退传统 // TC… STEP…: + code</text>
+
+  <rect x="300" y="250" width="220" height="70" class="box"/>
+  <text x="320" y="280" class="sub">加载 YAML（容错/编码检测）</text>
+
+  <rect x="580" y="250" width="320" height="70" class="box"/>
+  <text x="600" y="280" class="sub">按缩进插入 → 生成 .stub</text>
+
+  <rect x="40"  y="250" width="200" height="70" class="box"/>
+  <text x="60"  y="280" class="sub">创建备份与结果目录</text>
+
+  <rect x="40"  y="370" width="260" height="70" class="box"/>
+  <text x="60"  y="400" class="sub">执行日志（yamlweave.log / execution_*.log）</text>
+
+  <rect x="340" y="370" width="260" height="70" class="box"/>
+  <text x="360" y="400" class="sub">UI 日志与导出 / 清除</text>
+
+  <rect x="640" y="370" width="260" height="70" class="box"/>
+  <text x="660" y="395" class="sub">反向生成 YAML</text>
+  <text x="660" y="415" class="sub">（按 TC/STEP/segment 聚合）</text>
+
+  <!-- Edges -->
+  <line x1="240" y1="165" x2="300" y2="165" class="edge"/>
+  <line x1="520" y1="165" x2="580" y2="165" class="edge"/>
+  <line x1="450" y1="200" x2="450" y2="250" class="edge"/>
+  <line x1="520" y1="285" x2="580" y2="285" class="edge"/>
+  <line x1="140" y1="200" x2="140" y2="250" class="edge"/>
+  <line x1="200" y1="285" x2="300" y2="285" class="edge"/>
+
+  <line x1="200" y1="320" x2="200" y2="370" class="edge"/>
+  <line x1="450" y1="320" x2="470" y2="370" class="edge"/>
+  <line x1="740" y1="320" x2="740" y2="370" class="edge"/>
+
+  <!-- Caption -->
+  <text x="40" y="520" class="cap">占位图：仅为阅读参考，可替换为正式流程图（SVG）</text>
+</svg>

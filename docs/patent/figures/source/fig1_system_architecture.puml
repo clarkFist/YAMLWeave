@@ -1,0 +1,70 @@
+@startuml
+skinparam defaultFontSize 16
+skinparam defaultFontName "SimHei"
+skinparam rectangle {
+  FontSize 18
+  FontName "SimHei"
+  BorderThickness 3
+  RoundCorner 8
+}
+skinparam arrow {
+  FontSize 14
+  FontName "SimHei"
+  Thickness 2
+}
+
+title 系统整体架构图
+
+skinparam backgroundColor #F8F8F8
+
+rectangle "用户界面层" as ui_layer #FFFFCC {
+    rectangle "图形界面\nYAMLWeaveUI" as gui #E1F5FE
+    rectangle "命令行界面\nCLI" as cli #E1F5FE
+}
+
+rectangle "控制层" as control_layer #FFFFCC {
+    rectangle "应用控制器\nAppController" as app_controller #F3E5F5
+}
+
+rectangle "核心处理层" as core_layer #FFFFCC {
+    rectangle "插桩处理器\nStubProcessor" as stub_processor #FFF3E0
+    rectangle "插桩解析器\nStubParser" as stub_parser #FFF3E0
+}
+
+rectangle "处理器层" as processor_layer #FFFFCC {
+    rectangle "YAML处理器\nYamlStubHandler" as yaml_handler #E8F5E9
+    rectangle "注释处理器\nCommentHandler" as comment_handler #E8F5E9
+}
+
+rectangle "工具层" as tool_layer #FFFFCC {
+    rectangle "日志系统\nLogger" as logger #FFCDD2
+    rectangle "文件工具\nFileUtils" as file_utils #FFCDD2
+    rectangle "编码检测\nEncodingDetector" as encoding_detector #FFCDD2
+}
+
+rectangle "数据层" as data_layer #FFFFCC {
+    rectangle "YAML配置文件" as yaml_config #C8E6C9
+    rectangle "C源文件" as c_source #C8E6C9
+    rectangle "备份文件" as backup_files #C8E6C9
+    rectangle "插桩结果" as stub_result #C8E6C9
+}
+
+gui --> app_controller
+cli --> stub_processor
+app_controller --> stub_processor
+
+stub_processor --> stub_parser
+stub_processor --> yaml_handler
+stub_parser --> comment_handler
+stub_parser --> yaml_handler
+
+stub_processor --> logger
+stub_processor --> file_utils
+file_utils --> encoding_detector
+
+yaml_handler --> yaml_config
+stub_parser --> c_source
+stub_processor --> backup_files
+stub_processor --> stub_result
+
+@enduml

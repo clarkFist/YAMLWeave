@@ -1,0 +1,53 @@
+@startuml
+skinparam defaultFontSize 16
+skinparam defaultFontName "SimHei"
+skinparam rectangle {
+  FontSize 18
+  FontName "SimHei"
+  BorderThickness 3
+  RoundCorner 8
+}
+skinparam arrow {
+  FontSize 14
+  FontName "SimHei"
+  Thickness 2
+}
+
+title YAML配置文件三级索引结构示意图
+
+skinparam backgroundColor #F8F8F8
+
+rectangle "第一层：测试用例ID" as level1 #E3F2FD {
+    rectangle "TC001\n边界检查测试用例" as tc001 #E1F5FE
+    rectangle "TC002\n功能验证测试用例" as tc002 #E1F5FE
+}
+
+rectangle "第二层：测试步骤ID" as level2 #BBDEFB {
+    rectangle "STEP1\n数据边界检查" as step1_1 #E8F5E9
+    rectangle "STEP2\n业务规则验证" as step2_1 #E8F5E9
+    rectangle "STEP1\n模块加载验证" as step1_2 #E8F5E9
+    rectangle "STEP2\n配置参数检查" as step2_2 #E8F5E9
+}
+
+rectangle "第三层：代码段ID" as level3 #F3E5F5 {
+    rectangle "check_bounds_rule\n边界检查代码" as seg1 #FCE4EC
+    rectangle "format_check\n格式验证代码" as seg2 #FCE4EC
+    rectangle "network_init\n网络初始化代码" as seg3 #FCE4EC
+    rectangle "segment2\n内存分配代码" as seg4 #FCE4EC
+    rectangle "log_init\n日志初始化代码" as seg5 #FCE4EC
+    rectangle "segment1\n通用检查代码" as seg6 #FCE4EC
+}
+
+tc001 --> step1_1
+tc001 --> step2_1
+tc002 --> step1_2
+tc002 --> step2_2
+
+step1_1 --> seg1
+step1_1 --> seg2
+step2_1 --> seg3
+step2_1 --> seg4
+step1_2 --> seg5
+step2_2 --> seg6
+
+@enduml

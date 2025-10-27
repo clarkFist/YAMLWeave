@@ -1,0 +1,89 @@
+@startuml
+skinparam defaultFontSize 16
+skinparam defaultFontName "SimHei"
+skinparam activity {
+  FontSize 18
+  FontName "SimHei"
+}
+skinparam rectangle {
+  FontSize 18
+  FontName "SimHei"
+  BorderThickness 3
+}
+skinparam diamond {
+  FontSize 16
+  FontName "SimHei"
+  BorderThickness 3
+}
+
+title 锚点识别和解析流程图
+
+start
+
+:读取源文件内容;
+note right: 逐行扫描C/H文件
+
+:检测文件编码格式;
+note right: UTF-8/GBK/ASCII\n自动识别
+
+:初始化锚点识别器;
+note right: 双模式识别引擎
+
+if (发现注释行?) then (是)
+  :提取注释内容;
+  note right: 去除注释符号\n保留核心内容
+
+  if (匹配传统模式?) then (是)
+    :识别TC和STEP标识;
+    note right: 格式：TC001 STEP1
+
+    if (包含嵌入代码?) then (是)
+      :提取code:后的内容;
+      note right: 单行或多行\n桩代码提取
+
+      :创建传统模式锚点;
+      note left: 包含完整\n桩代码内容
+    else (否)
+      :标记为描述性注释;
+      note right: 仅包含说明信息
+    endif
+
+  else (否)
+    if (匹配分离模式?) then (是)
+      :解析三元组结构;
+      note right: TC/STEP/segment\n三级标识符
+
+      :验证标识符格式;
+      note left: 大小写不敏感\n支持多种命名
+
+      :创建分离模式锚点;
+      note right: 仅包含位置\n和标识信息
+
+    else (否)
+      :跳过普通注释;
+      note right: 非插桩相关注释
+    endif
+  endif
+
+else (否)
+  :继续下一行;
+  note right: 跳过非注释行
+endif
+
+:将锚点添加到列表;
+note right: 统一存储管理
+
+if (到达文件末尾?) then (是)
+  :生成锚点识别报告;
+  note left: 统计识别结果\n分类汇总信息
+
+  :返回锚点列表;
+  note right: 供后续处理使用
+
+  stop
+else (否)
+  :处理下一行;
+  note right: 继续扫描
+endif
+
+@enduml

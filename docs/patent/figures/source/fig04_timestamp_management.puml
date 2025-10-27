@@ -1,0 +1,85 @@
+@startuml
+skinparam defaultFontSize 16
+skinparam defaultFontName "SimHei"
+skinparam activity {
+  FontSize 18
+  FontName "SimHei"
+}
+skinparam rectangle {
+  FontSize 18
+  FontName "SimHei"
+  BorderThickness 3
+}
+
+title 时间戳管理机制和文件处理流程图
+
+start
+
+:获取当前系统时间;
+note right: 精确到秒级\nYYYY-MM-DD HH:MM:SS
+
+:格式化时间戳;
+note right: 转换为目录名格式\nlogs_YYYYMMDD_HHMMSS
+
+:创建时间戳根目录;
+note left: 在项目根目录下\n创建执行记录目录
+
+:创建子目录结构;
+note right: backup/原始备份\nresults/插桩结果\nlogs/执行日志
+
+partition "文件备份处理" {
+  :扫描待处理文件列表;
+  note right: 获取所有需要\n插桩的源文件
+
+  :计算文件MD5校验值;
+  note left: 确保文件完整性\n用于后续验证
+
+  :复制文件到backup目录;
+  note right: 保持原始目录结构\n确保路径一致性
+
+  :记录备份文件清单;
+  note left: 生成backup_manifest.json\n包含文件路径和校验值
+}
+
+partition "插桩处理阶段" {
+  :执行插桩操作;
+  note right: 调用核心插桩引擎\n处理所有目标文件
+
+  :生成插桩结果文件;
+  note left: 保存到results目录\n维护相同目录结构
+
+  :记录处理日志;
+  note right: 详细的操作记录\n包含时间戳和状态
+}
+
+partition "结果管理" {
+  :生成执行摘要报告;
+  note left: 统计处理文件数量\n插桩点数量等信息
+
+  :创建恢复脚本;
+  note right: 自动生成restore.sh\n支持一键恢复原始状态
+
+  :更新全局执行历史;
+  note left: 在execution_history.json\n中记录本次执行信息
+}
+
+:验证目录完整性;
+note right: 检查所有必要文件\n是否正确生成
+
+if (验证通过?) then (是)
+  :输出成功信息;
+  note right: 显示时间戳目录路径\n和主要统计信息
+
+  stop
+
+else (否)
+  :记录错误信息;
+  note left: 详细的错误日志\n便于问题追踪
+
+  :清理不完整目录;
+  note right: 删除损坏的\n时间戳目录
+
+  stop
+endif
+
+@enduml

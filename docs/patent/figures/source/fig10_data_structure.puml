@@ -1,0 +1,176 @@
+@startuml
+skinparam defaultFontSize 16
+skinparam defaultFontName "SimHei"
+skinparam class {
+  FontSize 18
+  FontName "SimHei"
+  BorderThickness 3
+}
+
+title 执行统计报告的数据结构图
+
+skinparam backgroundColor #F8F8F8
+
+class ExecutionReport {
+  +String execution_id
+  +DateTime start_time
+  +DateTime end_time
+  +Float duration_seconds
+  +String project_path
+  +String yaml_config_path
+  +ProcessingMode mode
+  +ExecutionStatus status
+  --
+  +generateReport()
+  +exportToJSON()
+  +exportToHTML()
+}
+
+class FileStatistics {
+  +Integer total_files_found
+  +Integer files_processed
+  +Integer files_skipped
+  +Integer files_with_errors
+  +List<String> processed_file_list
+  +List<String> skipped_file_list
+  +List<String> error_file_list
+  --
+  +calculateProcessingRate()
+  +getFilesByExtension()
+}
+
+class AnchorStatistics {
+  +Integer total_anchors_found
+  +Integer traditional_mode_anchors
+  +Integer separate_mode_anchors
+  +Integer successful_insertions
+  +Integer failed_insertions
+  +Map<String, Integer> anchor_types_count
+  --
+  +calculateSuccessRate()
+  +getAnchorDistribution()
+}
+
+class StubCodeStatistics {
+  +Integer total_stub_lines
+  +Integer unique_stub_segments
+  +Integer reused_stub_segments
+  +Map<String, Integer> test_case_usage
+  +Map<String, Integer> step_usage
+  +Map<String, Integer> segment_usage
+  --
+  +calculateReuseRate()
+  +getTopUsedSegments()
+}
+
+class PerformanceMetrics {
+  +Float cpu_usage_percent
+  +Long memory_usage_mb
+  +Integer threads_used
+  +Float files_per_second
+  +Float anchors_per_second
+  +Long peak_memory_usage
+  --
+  +calculateThroughput()
+  +getResourceUtilization()
+}
+
+class ErrorReport {
+  +Integer total_errors
+  +Integer warning_count
+  +Integer error_count
+  +Integer critical_count
+  +List<ErrorDetail> error_details
+  +Map<String, Integer> error_categories
+  --
+  +groupByCategory()
+  +getSeverityDistribution()
+}
+
+class ErrorDetail {
+  +String error_id
+  +DateTime timestamp
+  +ErrorLevel level
+  +String category
+  +String message
+  +String file_path
+  +Integer line_number
+  +String stack_trace
+  --
+  +formatMessage()
+  +getContextInfo()
+}
+
+class BackupInfo {
+  +String backup_directory
+  +Integer backed_up_files
+  +Long backup_size_bytes
+  +List<String> backup_file_list
+  +String backup_checksum
+  +DateTime backup_timestamp
+  --
+  +verifyBackupIntegrity()
+  +calculateBackupSize()
+}
+
+class OutputInfo {
+  +String output_directory
+  +Integer generated_files
+  +Long total_output_size
+  +List<String> output_file_list
+  +Map<String, String> file_checksums
+  --
+  +verifyOutputIntegrity()
+  +generateFileManifest()
+}
+
+class ConfigurationSnapshot {
+  +String yaml_file_content
+  +Map<String, Object> parsed_config
+  +String configuration_hash
+  +Integer total_test_cases
+  +Integer total_steps
+  +Integer total_segments
+  --
+  +validateConfiguration()
+  +getConfigSummary()
+}
+
+enum ProcessingMode {
+  TRADITIONAL
+  SEPARATE
+  MIXED
+}
+
+enum ExecutionStatus {
+  SUCCESS
+  PARTIAL_SUCCESS
+  FAILED
+  CANCELLED
+}
+
+enum ErrorLevel {
+  DEBUG
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+}
+
+' 关联关系
+ExecutionReport ||--|| FileStatistics
+ExecutionReport ||--|| AnchorStatistics
+ExecutionReport ||--|| StubCodeStatistics
+ExecutionReport ||--|| PerformanceMetrics
+ExecutionReport ||--|| ErrorReport
+ExecutionReport ||--|| BackupInfo
+ExecutionReport ||--|| OutputInfo
+ExecutionReport ||--|| ConfigurationSnapshot
+
+ErrorReport ||--o{ ErrorDetail
+
+ExecutionReport --> ProcessingMode
+ExecutionReport --> ExecutionStatus
+ErrorDetail --> ErrorLevel
+
+@enduml

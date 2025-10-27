@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="1200px" height="900px" viewBox="0 0 1200 900"
+     style="background:#FFFFFF;">
+<title>错误处理机制图</title>
+
+<!-- 标题 -->
+<text x="600" y="40" text-anchor="middle" font-family="SimHei" font-size="26" font-weight="bold" fill="#000000">
+多层次错误处理和恢复机制图
+</text>
+
+<!-- 错误检测层 -->
+<rect x="50" y="80" width="300" height="150" rx="15" fill="#FFEBEE" stroke="#D32F2F" stroke-width="3"/>
+<text x="200" y="105" text-anchor="middle" font-family="SimHei" font-size="22" font-weight="bold" fill="#000000">错误检测层</text>
+
+<!-- 文件系统错误 -->
+<rect x="70" y="130" width="120" height="50" rx="8" fill="#FFCDD2" stroke="#F44336" stroke-width="2"/>
+<text x="130" y="150" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">文件系统</text>
+<text x="130" y="165" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">访问错误</text>
+
+<!-- 解析错误 -->
+<rect x="210" y="130" width="120" height="50" rx="8" fill="#FFCDD2" stroke="#F44336" stroke-width="2"/>
+<text x="270" y="150" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">YAML解析</text>
+<text x="270" y="165" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">语法错误</text>
+
+<!-- 业务逻辑错误 -->
+<rect x="140" y="190" width="120" height="50" rx="8" fill="#FFCDD2" stroke="#F44336" stroke-width="2"/>
+<text x="200" y="210" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">业务逻辑</text>
+<text x="200" y="225" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">验证错误</text>
+
+<!-- 错误分类处理 -->
+<rect x="400" y="80" width="400" height="150" rx="15" fill="#FFF3E0" stroke="#F57C00" stroke-width="3"/>
+<text x="600" y="105" text-anchor="middle" font-family="SimHei" font-size="22" font-weight="bold" fill="#000000">错误分类处理</text>
+
+<!-- 可恢复错误 -->
+<rect x="420" y="130" width="130" height="50" rx="8" fill="#E8F5E9" stroke="#4CAF50" stroke-width="2"/>
+<text x="485" y="150" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">可恢复错误</text>
+<text x="485" y="165" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">自动重试</text>
+
+<!-- 不可恢复错误 -->
+<rect x="570" y="130" width="130" height="50" rx="8" fill="#FFCDD2" stroke="#F44336" stroke-width="2"/>
+<text x="635" y="150" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">不可恢复</text>
+<text x="635" y="165" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">立即终止</text>
+
+<!-- 警告级错误 -->
+<rect x="720" y="130" width="130" height="50" rx="8" fill="#FFF9C4" stroke="#FBC02D" stroke-width="2"/>
+<text x="785" y="150" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">警告级错误</text>
+<text x="785" y="165" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">记录日志</text>
+
+<!-- 恢复策略层 -->
+<rect x="50" y="280" width="500" height="200" rx="15" fill="#E3F2FD" stroke="#1976D2" stroke-width="3"/>
+<text x="300" y="305" text-anchor="middle" font-family="SimHei" font-size="22" font-weight="bold" fill="#000000">恢复策略执行</text>
+
+<!-- 文件级恢复 -->
+<rect x="70" y="330" width="140" height="60" rx="8" fill="#E1F5FE" stroke="#03A9F4" stroke-width="2"/>
+<text x="140" y="350" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">文件级恢复</text>
+<text x="140" y="365" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">备份还原</text>
+<text x="140" y="380" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">权限修复</text>
+
+<!-- 配置级恢复 -->
+<rect x="230" y="330" width="140" height="60" rx="8" fill="#E1F5FE" stroke="#03A9F4" stroke-width="2"/>
+<text x="300" y="350" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">配置级恢复</text>
+<text x="300" y="365" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">默认配置</text>
+<text x="300" y="380" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">重新加载</text>
+
+<!-- 系统级恢复 -->
+<rect x="390" y="330" width="140" height="60" rx="8" fill="#E1F5FE" stroke="#03A9F4" stroke-width="2"/>
+<text x="460" y="350" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">系统级恢复</text>
+<text x="460" y="365" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">进程重启</text>
+<text x="460" y="380" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">资源清理</text>
+
+<!-- 用户交互 -->
+<rect x="150" y="410" width="200" height="50" rx="8" fill="#F3E5F5" stroke="#9C27B0" stroke-width="2"/>
+<text x="250" y="430" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">用户交互处理</text>
+<text x="250" y="445" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">手动修复指导</text>
+
+<!-- 错误报告生成 -->
+<rect x="600" y="280" width="500" height="200" rx="15" fill="#E8F5E9" stroke="#4CAF50" stroke-width="3"/>
+<text x="850" y="305" text-anchor="middle" font-family="SimHei" font-size="22" font-weight="bold" fill="#000000">错误报告生成</text>
+
+<!-- 错误详情记录 -->
+<rect x="620" y="330" width="140" height="60" rx="8" fill="#C8E6C9" stroke="#66BB6A" stroke-width="2"/>
+<text x="690" y="350" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">错误详情</text>
+<text x="690" y="365" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">类型时间</text>
+<text x="690" y="380" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">堆栈跟踪</text>
+
+<!-- 恢复行动记录 -->
+<rect x="780" y="330" width="140" height="60" rx="8" fill="#C8E6C9" stroke="#66BB6A" stroke-width="2"/>
+<text x="850" y="350" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">恢复行动</text>
+<text x="850" y="365" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">执行步骤</text>
+<text x="850" y="380" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">结果状态</text>
+
+<!-- 统计分析数据 -->
+<rect x="940" y="330" width="140" height="60" rx="8" fill="#C8E6C9" stroke="#66BB6A" stroke-width="2"/>
+<text x="1010" y="350" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">统计分析</text>
+<text x="1010" y="365" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">错误频率</text>
+<text x="1010" y="380" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">成功率</text>
+
+<!-- 反馈优化 -->
+<rect x="700" y="410" width="200" height="50" rx="8" fill="#FFF3E0" stroke="#FF9800" stroke-width="2"/>
+<text x="800" y="430" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">反馈优化系统</text>
+<text x="800" y="445" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">策略调整建议</text>
+
+<!-- 监控与预警 -->
+<rect x="300" y="520" width="600" height="100" rx="15" fill="#F0F4F8" stroke="#37474F" stroke-width="3"/>
+<text x="600" y="545" text-anchor="middle" font-family="SimHei" font-size="22" font-weight="bold" fill="#000000">监控与预警系统</text>
+
+<!-- 实时监控 -->
+<rect x="330" y="570" width="150" height="40" rx="8" fill="#E3F2FD" stroke="#2196F3" stroke-width="2"/>
+<text x="405" y="590" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">实时状态监控</text>
+
+<!-- 阈值预警 -->
+<rect x="500" y="570" width="150" height="40" rx="8" fill="#FFF3E0" stroke="#FF9800" stroke-width="2"/>
+<text x="575" y="590" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">阈值预警机制</text>
+
+<!-- 趋势分析 -->
+<rect x="670" y="570" width="150" height="40" rx="8" fill="#E8F5E9" stroke="#4CAF50" stroke-width="2"/>
+<text x="745" y="590" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">趋势分析预测</text>
+
+<!-- 连接线 -->
+<!-- 检测层到分类层 -->
+<line x1="350" y1="155" x2="400" y2="155" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+<!-- 分类层到恢复层 -->
+<line x1="485" y1="180" x2="300" y2="280" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+<!-- 分类层到报告层 -->
+<line x1="635" y1="180" x2="850" y2="280" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+<!-- 恢复层到监控层 -->
+<line x1="300" y1="480" x2="500" y2="520" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+<!-- 报告层到监控层 -->
+<line x1="850" y1="480" x2="700" y2="520" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+<!-- 反馈循环 -->
+<path d="M 900 520 Q 950 500 950 450 Q 950 400 900 350" stroke="#666" stroke-width="2" fill="none" stroke-dasharray="5,5" marker-end="url(#arrowhead)"/>
+
+<!-- 监控反馈到检测层 -->
+<path d="M 400 620 Q 350 650 300 650 Q 250 650 200 620 Q 150 590 150 280 Q 150 180 150 155" stroke="#666" stroke-width="2" fill="none" stroke-dasharray="5,5" marker-end="url(#arrowhead)"/>
+
+<!-- 箭头标记 -->
+<defs>
+<marker id="arrowhead" markerWidth="10" markerHeight="7"
+ refX="9" refY="3.5" orient="auto">
+  <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+</marker>
+</defs>
+
+<!-- 流程说明文字 -->
+<text x="600" y="680" text-anchor="middle" font-family="SimHei" font-size="20" font-weight="bold" fill="#333">
+系统运行流程：错误检测 → 智能分类 → 自动恢复 → 报告生成 → 监控预警 → 反馈优化
+</text>
+
+</svg>

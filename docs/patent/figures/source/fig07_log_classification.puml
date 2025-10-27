@@ -1,0 +1,102 @@
+@startuml
+skinparam defaultFontSize 16
+skinparam defaultFontName "SimHei"
+skinparam activity {
+  FontSize 18
+  FontName "SimHei"
+}
+
+title UILogHandler智能日志分类流程图
+
+start
+
+:接收日志记录请求;
+note right: 来自核心处理模块\n的日志消息
+
+:解析日志消息;
+note left: 提取日志级别\n时间戳和内容
+
+if (日志级别判断) then (DEBUG)
+  :设置调试级别标识;
+  note right: 详细的调试信息\n仅在开发模式显示
+
+else if (INFO)
+  :设置信息级别标识;
+  note right: 一般信息提示\n正常执行状态
+
+else if (WARNING)
+  :设置警告级别标识;
+  note right: 潜在问题提醒\n不影响正常执行
+
+else if (ERROR)
+  :设置错误级别标识;
+  note right: 执行错误\n需要用户关注
+
+else (CRITICAL)
+  :设置严重错误标识;
+  note right: 系统严重错误\n可能导致程序终止
+endif
+
+:分析消息内容类型;
+note left: 根据内容关键词\n进行智能分类
+
+partition "智能分类处理" {
+  if (包含文件操作关键词?) then (是)
+    :标记为文件操作类;
+    note right: read, write, copy\nbackup, create等
+
+  else if (包含插桩相关关键词?) then (是)
+    :标记为插桩处理类;
+    note right: stub, anchor, parse\ninsert, process等
+
+  else if (包含配置相关关键词?) then (是)
+    :标记为配置管理类;
+    note right: yaml, config, load\nsetting, parameter等
+
+  else if (包含错误相关关键词?) then (是)
+    :标记为错误处理类;
+    note right: error, exception, fail\ntimeout, invalid等
+
+  else (其他)
+    :标记为通用信息类;
+    note right: 无特定分类的\n一般性信息
+  endif
+}
+
+:应用颜色编码;
+note left: 根据级别和类型\n设置显示颜色
+
+:格式化输出内容;
+note right: 添加时间戳前缀\n统一消息格式
+
+partition "多重输出处理" {
+  :输出到控制台;
+  note left: 带颜色编码的\n实时显示
+
+  :输出到日志文件;
+  note right: 纯文本格式\n持久化存储
+
+  if (GUI界面活跃?) then (是)
+    :输出到GUI日志区域;
+    note left: 图形界面的\n日志显示区域
+  else (否)
+    :跳过GUI输出;
+  endif
+}
+
+:更新日志统计信息;
+note right: 统计各级别\n日志数量
+
+:检查日志文件大小;
+note left: 防止日志文件\n过大影响性能
+
+if (超过大小限制?) then (是)
+  :执行日志轮转;
+  note right: 创建新的日志文件\n归档旧的日志
+else (否)
+  :继续写入当前文件;
+endif
+
+stop
+
+@enduml

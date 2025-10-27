@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="1200px" height="900px" viewBox="0 0 1200 900"
+     style="background:#FFFFFF;">
+<title>三级索引数据结构图</title>
+
+<!-- 标题 -->
+<text x="600" y="40" text-anchor="middle" font-family="SimHei" font-size="26" font-weight="bold" fill="#000000">
+三级索引数据结构关系图
+</text>
+
+<!-- 一级索引：测试用例层 -->
+<rect x="50" y="80" width="1100" height="120" rx="15" fill="#E3F2FD" stroke="#1976D2" stroke-width="3"/>
+<text x="600" y="105" text-anchor="middle" font-family="SimHei" font-size="22" font-weight="bold" fill="#000000">
+一级索引：测试用例层级 (TC001, TC002, TC003...)
+</text>
+
+<!-- TC001 -->
+<rect x="80" y="130" width="200" height="60" rx="10" fill="#BBDEFB" stroke="#1976D2" stroke-width="2"/>
+<text x="180" y="155" text-anchor="middle" font-family="SimHei" font-size="20" font-weight="bold" fill="#000000">TC001</text>
+<text x="180" y="175" text-anchor="middle" font-family="SimHei" font-size="18" fill="#666">网络配置测试</text>
+
+<!-- TC002 -->
+<rect x="300" y="130" width="200" height="60" rx="10" fill="#BBDEFB" stroke="#1976D2" stroke-width="2"/>
+<text x="400" y="155" text-anchor="middle" font-family="SimHei" font-size="20" font-weight="bold" fill="#000000">TC002</text>
+<text x="400" y="175" text-anchor="middle" font-family="SimHei" font-size="18" fill="#666">文件操作测试</text>
+
+<!-- TC003 -->
+<rect x="520" y="130" width="200" height="60" rx="10" fill="#BBDEFB" stroke="#1976D2" stroke-width="2"/>
+<text x="620" y="155" text-anchor="middle" font-family="SimHei" font-size="20" font-weight="bold" fill="#000000">TC003</text>
+<text x="620" y="175" text-anchor="middle" font-family="SimHei" font-size="18" fill="#666">数据验证测试</text>
+
+<!-- 更多测试用例省略号 -->
+<text x="850" y="160" text-anchor="middle" font-family="SimHei" font-size="24" fill="#666">...</text>
+
+<!-- 二级索引：测试步骤层 -->
+<rect x="50" y="230" width="1100" height="140" rx="15" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="3"/>
+<text x="600" y="255" text-anchor="middle" font-family="SimHei" font-size="22" font-weight="bold" fill="#000000">
+二级索引：测试步骤层级 (STEP1, STEP2, STEP3...)
+</text>
+
+<!-- TC001的步骤 -->
+<rect x="80" y="280" width="120" height="50" rx="8" fill="#E1BEE7" stroke="#9C27B0" stroke-width="2"/>
+<text x="140" y="300" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">STEP1</text>
+<text x="140" y="315" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">初始化</text>
+
+<rect x="210" y="280" width="120" height="50" rx="8" fill="#E1BEE7" stroke="#9C27B0" stroke-width="2"/>
+<text x="270" y="300" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">STEP2</text>
+<text x="270" y="315" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">配置设置</text>
+
+<!-- TC002的步骤 -->
+<rect x="350" y="280" width="120" height="50" rx="8" fill="#E1BEE7" stroke="#9C27B0" stroke-width="2"/>
+<text x="410" y="300" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">STEP1</text>
+<text x="410" y="315" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">文件创建</text>
+
+<rect x="480" y="280" width="120" height="50" rx="8" fill="#E1BEE7" stroke="#9C27B0" stroke-width="2"/>
+<text x="540" y="300" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">STEP2</text>
+<text x="540" y="315" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">权限检查</text>
+
+<!-- TC003的步骤 -->
+<rect x="620" y="280" width="120" height="50" rx="8" fill="#E1BEE7" stroke="#9C27B0" stroke-width="2"/>
+<text x="680" y="300" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">STEP1</text>
+<text x="680" y="315" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">数据加载</text>
+
+<rect x="750" y="280" width="120" height="50" rx="8" fill="#E1BEE7" stroke="#9C27B0" stroke-width="2"/>
+<text x="810" y="300" text-anchor="middle" font-family="SimHei" font-size="18" fill="#000000">STEP2</text>
+<text x="810" y="315" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">格式验证</text>
+
+<!-- 三级索引：代码段层 -->
+<rect x="50" y="400" width="1100" height="280" rx="15" fill="#E8F5E9" stroke="#388E3C" stroke-width="3"/>
+<text x="600" y="425" text-anchor="middle" font-family="SimHei" font-size="22" font-weight="bold" fill="#000000">
+三级索引：代码段层级 (Segment1, Segment2...)
+</text>
+
+<!-- 网络配置代码段 -->
+<rect x="80" y="450" width="200" height="80" rx="10" fill="#C8E6C9" stroke="#4CAF50" stroke-width="2"/>
+<text x="180" y="470" text-anchor="middle" font-family="SimHei" font-size="18" font-weight="bold" fill="#000000">网络配置段</text>
+<text x="180" y="485" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">IP地址设置</text>
+<text x="180" y="500" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">端口配置</text>
+<text x="180" y="515" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">连接建立</text>
+
+<!-- 权限检查代码段 -->
+<rect x="300" y="450" width="200" height="80" rx="10" fill="#C8E6C9" stroke="#4CAF50" stroke-width="2"/>
+<text x="400" y="470" text-anchor="middle" font-family="SimHei" font-size="18" font-weight="bold" fill="#000000">权限验证段</text>
+<text x="400" y="485" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">用户认证</text>
+<text x="400" y="500" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">访问控制</text>
+<text x="400" y="515" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">权限检验</text>
+
+<!-- 数据处理代码段 -->
+<rect x="520" y="450" width="200" height="80" rx="10" fill="#C8E6C9" stroke="#4CAF50" stroke-width="2"/>
+<text x="620" y="470" text-anchor="middle" font-family="SimHei" font-size="18" font-weight="bold" fill="#000000">数据处理段</text>
+<text x="620" y="485" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">输入验证</text>
+<text x="620" y="500" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">格式转换</text>
+<text x="620" y="515" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">结果输出</text>
+
+<!-- 错误处理代码段 -->
+<rect x="740" y="450" width="200" height="80" rx="10" fill="#C8E6C9" stroke="#4CAF50" stroke-width="2"/>
+<text x="840" y="470" text-anchor="middle" font-family="SimHei" font-size="18" font-weight="bold" fill="#000000">错误处理段</text>
+<text x="840" y="485" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">异常捕获</text>
+<text x="840" y="500" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">错误记录</text>
+<text x="840" y="515" text-anchor="middle" font-family="SimHei" font-size="16" fill="#666">恢复机制</text>
+
+<!-- 具体实现代码示例 -->
+<rect x="80" y="560" width="860" height="100" rx="10" fill="#F5F5F5" stroke="#757575" stroke-width="1"/>
+<text x="90" y="580" font-family="Courier" font-size="16" fill="#333">
+具体代码实现示例：
+</text>
+<text x="90" y="600" font-family="Courier" font-size="14" fill="#666">
+network_config:
+</text>
+<text x="110" y="615" font-family="Courier" font-size="14" fill="#666">
+  host: "192.168.1.100"
+</text>
+<text x="110" y="630" font-family="Courier" font-size="14" fill="#666">
+  port: 8080
+</text>
+<text x="110" y="645" font-family="Courier" font-size="14" fill="#666">
+  timeout: 30
+</text>
+
+<!-- 数据流向箭头 -->
+<!-- 一级到二级 -->
+<line x1="180" y1="190" x2="140" y2="280" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+<line x1="180" y1="190" x2="270" y2="280" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+<line x1="400" y1="190" x2="410" y2="280" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+<line x1="400" y1="190" x2="540" y2="280" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+<line x1="620" y1="190" x2="680" y2="280" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+<line x1="620" y1="190" x2="810" y2="280" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+<!-- 二级到三级 -->
+<line x1="140" y1="330" x2="180" y2="450" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+<line x1="270" y1="330" x2="180" y2="450" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+<line x1="410" y1="330" x2="400" y2="450" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+<line x1="540" y1="330" x2="400" y2="450" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+<line x1="680" y1="330" x2="620" y2="450" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+<line x1="810" y1="330" x2="620" y2="450" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+<!-- 各层级关联说明 -->
+<rect x="980" y="450" width="180" height="200" rx="10" fill="#FFF3E0" stroke="#FF9800" stroke-width="2"/>
+<text x="1070" y="470" text-anchor="middle" font-family="SimHei" font-size="18" font-weight="bold" fill="#000000">索引关系说明</text>
+
+<text x="990" y="495" font-family="SimHei" font-size="16" fill="#333">
+• 一级索引：定位测试用例
+</text>
+<text x="990" y="515" font-family="SimHei" font-size="16" fill="#333">
+• 二级索引：定位具体步骤
+</text>
+<text x="990" y="535" font-family="SimHei" font-size="16" fill="#333">
+• 三级索引：定位代码段
+</text>
+
+<text x="990" y="565" font-family="SimHei" font-size="16" fill="#666">
+层级关系：
+</text>
+<text x="990" y="580" font-family="SimHei" font-size="14" fill="#666">
+TC001 → STEP1 → Segment1
+</text>
+<text x="990" y="595" font-family="SimHei" font-size="14" fill="#666">
+TC001 → STEP2 → Segment2
+</text>
+<text x="990" y="610" font-family="SimHei" font-size="14" fill="#666">
+TC002 → STEP1 → Segment3
+</text>
+<text x="990" y="625" font-family="SimHei" font-size="14" fill="#666">
+...
+</text>
+
+<!-- 性能优势说明 -->
+<text x="600" y="720" text-anchor="middle" font-family="SimHei" font-size="20" font-weight="bold" fill="#333">
+性能优势：O(1)时间复杂度快速定位，支持大规模测试用例集合的高效管理
+</text>
+
+<!-- 箭头标记 -->
+<defs>
+<marker id="arrowhead" markerWidth="10" markerHeight="7"
+ refX="9" refY="3.5" orient="auto">
+  <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+</marker>
+</defs>
+
+</svg>

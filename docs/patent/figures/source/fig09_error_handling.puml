@@ -1,0 +1,107 @@
+@startuml
+skinparam defaultFontSize 16
+skinparam defaultFontName "SimHei"
+skinparam rectangle {
+  FontSize 18
+  FontName "SimHei"
+  BorderThickness 3
+}
+
+title 多层次错误处理和恢复机制图
+
+skinparam backgroundColor #F8F8F8
+
+rectangle "错误检测层" as detection_layer #E3F2FD {
+    rectangle "文件系统错误" as fs_errors #E1F5FE {
+        rectangle "文件不存在" as file_not_found #FFCDD2
+        rectangle "权限不足" as permission_denied #FFCDD2
+        rectangle "磁盘空间不足" as disk_full #FFCDD2
+    }
+
+    rectangle "解析错误" as parse_errors #E1F5FE {
+        rectangle "YAML语法错误" as yaml_syntax #FFCDD2
+        rectangle "编码格式错误" as encoding_error #FFCDD2
+        rectangle "锚点格式错误" as anchor_format #FFCDD2
+    }
+
+    rectangle "业务逻辑错误" as logic_errors #E1F5FE {
+        rectangle "桩代码缺失" as missing_stub #FFCDD2
+        rectangle "循环依赖" as circular_dep #FFCDD2
+        rectangle "配置冲突" as config_conflict #FFCDD2
+    }
+}
+
+rectangle "错误分类处理" as classification_layer #FFF3E0 {
+    rectangle "可恢复错误" as recoverable #C8E6C9 {
+        rectangle "自动重试机制" as auto_retry #E8F5E9
+        rectangle "降级处理策略" as degraded_mode #E8F5E9
+        rectangle "跳过处理策略" as skip_strategy #E8F5E9
+    }
+
+    rectangle "不可恢复错误" as unrecoverable #FFCDD2 {
+        rectangle "立即终止" as immediate_stop #FCE4EC
+        rectangle "回滚操作" as rollback #FCE4EC
+        rectangle "清理资源" as cleanup #FCE4EC
+    }
+
+    rectangle "警告级错误" as warnings #FFECB3 {
+        rectangle "记录警告日志" as log_warning #FFF9C4
+        rectangle "继续执行" as continue_exec #FFF9C4
+        rectangle "用户提醒" as user_notify #FFF9C4
+    }
+}
+
+rectangle "恢复策略执行" as recovery_layer #F3E5F5 {
+    rectangle "文件级恢复" as file_recovery #FCE4EC {
+        rectangle "备份文件还原" as restore_backup #E8F5E9
+        rectangle "重新创建文件" as recreate_file #E8F5E9
+        rectangle "修复文件权限" as fix_permission #E8F5E9
+    }
+
+    rectangle "配置级恢复" as config_recovery #FCE4EC {
+        rectangle "重载配置文件" as reload_config #E8F5E9
+        rectangle "使用默认配置" as default_config #E8F5E9
+        rectangle "交互式修复" as interactive_fix #E8F5E9
+    }
+
+    rectangle "系统级恢复" as system_recovery #FCE4EC {
+        rectangle "重启处理进程" as restart_process #E8F5E9
+        rectangle "清理临时文件" as clean_temp #E8F5E9
+        rectangle "释放系统资源" as release_resource #E8F5E9
+    }
+}
+
+rectangle "错误报告生成" as reporting_layer #E8F5E9 {
+    rectangle "错误详情记录" as error_details #C8E6C9 {
+        rectangle "错误类型分类" as error_type #DCEDC8
+        rectangle "发生时间记录" as error_time #DCEDC8
+        rectangle "堆栈跟踪信息" as stack_trace #DCEDC8
+    }
+
+    rectangle "恢复行动记录" as recovery_actions #C8E6C9 {
+        rectangle "执行的恢复步骤" as recovery_steps #DCEDC8
+        rectangle "恢复结果状态" as recovery_result #DCEDC8
+        rectangle "用户建议操作" as user_suggestions #DCEDC8
+    }
+
+    rectangle "统计分析数据" as statistics #C8E6C9 {
+        rectangle "错误频率统计" as error_frequency #DCEDC8
+        rectangle "恢复成功率" as recovery_rate #DCEDC8
+        rectangle "性能影响评估" as performance_impact #DCEDC8
+    }
+}
+
+' 连接关系
+fs_errors --> recoverable
+parse_errors --> unrecoverable
+logic_errors --> warnings
+
+auto_retry --> file_recovery
+degraded_mode --> config_recovery
+skip_strategy --> system_recovery
+
+file_recovery --> error_details
+config_recovery --> recovery_actions
+system_recovery --> statistics
+
+@enduml

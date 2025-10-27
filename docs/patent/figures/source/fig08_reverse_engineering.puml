@@ -1,0 +1,95 @@
+@startuml
+skinparam defaultFontSize 16
+skinparam defaultFontName "SimHei"
+skinparam activity {
+  FontSize 18
+  FontName "SimHei"
+}
+
+title 反向工程功能的工作原理图
+
+start
+
+:扫描传统格式源文件;
+note right: 搜索包含嵌入式\n桩代码的C/H文件
+
+:识别传统注释格式;
+note left: 查找TC001 STEP1格式\n和code:标识的注释
+
+partition "注释解析处理" {
+  :提取测试用例标识;
+  note right: 解析TC001、TC102\n等测试用例编号
+
+  :提取测试步骤标识;
+  note left: 解析STEP1、STEP2\n等步骤编号
+
+  :提取嵌入的桩代码;
+  note right: 解析code:后的\n完整代码内容
+
+  :生成代码段标识符;
+  note left: 自动生成segment1、segment2\n或基于内容的描述性名称
+}
+
+:构建YAML数据结构;
+note right: 按三级索引格式\n组织提取的信息
+
+partition "YAML文件生成" {
+  :创建测试用例层级;
+  note left: 建立TC001、TC102\n等顶级节点
+
+  :创建测试步骤层级;
+  note right: 在测试用例下\n建立STEP节点
+
+  :插入桩代码内容;
+  note left: 使用literal block格式\n保持代码格式
+
+  :添加注释和说明;
+  note right: 生成详细的\n功能描述注释
+}
+
+:优化代码段命名;
+note left: 根据代码功能\n生成语义化名称
+
+if (代码内容分析) then (包含检查逻辑)
+  :命名为check_xxx;
+  note right: 如check_bounds\nvalidate_input等
+
+else if (包含初始化逻辑)
+  :命名为init_xxx;
+  note right: 如init_network\nsetup_config等
+
+else if (包含日志逻辑)
+  :命名为log_xxx;
+  note right: 如log_debug\nrecord_event等
+
+else (其他逻辑)
+  :命名为segment_N;
+  note right: 使用序号型\n通用命名
+endif
+
+:生成迁移报告;
+note left: 记录转换统计\n和潜在问题
+
+:输出YAML配置文件;
+note right: 生成符合规范的\n分离模式配置
+
+:生成清理后的源文件;
+note left: 移除嵌入桩代码\n保留锚点标识
+
+:验证转换结果;
+note right: 确保YAML文件\n语法正确性
+
+if (验证通过?) then (是)
+  :输出成功信息;
+  note left: 显示转换统计\n和文件位置
+
+  stop
+
+else (否)
+  :输出错误报告;
+  note right: 详细的错误信息\n和修复建议
+
+  stop
+endif
+
+@enduml
